@@ -65,7 +65,7 @@ function gameLoop(timestamp) {
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-        player.update(keys, deltaTime, canvas, otherPlayer)
+        player.update(keys, deltaTime, canvas, otherPlayer, timestamp)
         player.draw(ctx);
     });
 

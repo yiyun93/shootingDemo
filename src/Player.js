@@ -87,7 +87,7 @@ export default class Player {
   }
 
 
-  update(keys, deltaTime, canvas, otherPlayer) {
+  update(keys, deltaTime, canvas, otherPlayer, timestamp) {
     // 이동, 점프, 물리 처리 등
     this.move(keys, deltaTime, canvas.width);
     this.stomp(otherPlayer);
