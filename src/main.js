@@ -39,6 +39,13 @@ let lastTime = 0;
 let animationId = null;
 
 function gameLoop(timestamp) {
+    // 게임오버 텍스트 표시
+    if (isGameOver) {
+        ctx.font = '40px Arial';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
+    }
 
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
@@ -77,17 +84,12 @@ function gameLoop(timestamp) {
             }
         }
 
-        ctx.font = '40px Arial';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
-
         // 게임 루프를 멈추고 버튼을 표시
         restartButton.style.display = 'block';
     }
 
     // 둘다 살아 있을 때 충돌 분리
-    if(activePlayers.length >= 2)
+    if (activePlayers.length >= 2)
         resolveOverlap(activePlayers[0], activePlayers[1]);
 
 
