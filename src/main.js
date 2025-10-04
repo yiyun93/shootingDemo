@@ -1,15 +1,12 @@
+import { GRAVITY, playerSpeed, jumpStrength, maxJumps, bulletSpeed, bulletSize, shootCooldown } from './constants.js';
+import { Player1Config, Player2Config } from './playerConfigs.js';
+import { keys, setupInput } from './input.js';
+import { isColliding, handlePlatformCollision, resolveOverlap } from './physics.js';
+import Player from './Player.js';
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-//상수값
-const gravity = 0.5;
-const playerSpeed = 5;
-const jumpStrength = -10;
-const bulletSpeed = 8;
-const bulletSize = 5;
-const bulletCooldown = 300;
-const maxJumps = 2;
-//새로추가
 let isGameOver = false; // 게임 상태를 추적하는 변수
 const restartButton = document.getElementById('restartButton'); // 버튼 엘리먼트 가져오기
 
@@ -20,51 +17,9 @@ const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
 
-const initialPlayer1 = {
-    id: 1,
-    x: 50,
-    y: 500,
-    width: 30,
-    height: 50,
-    color: 'red',
-    yVelocity: 0,
-    bullets: [],
-    lastShotTime: 0,
-    jumpsLeft: maxJumps,
-    isAlive: true,
-    controls: {
-        left: 'a',
-        right: 'd',
-        jump: 'w',
-        down: 's',
-        shoot: ' '
-    }
-};
-
-const initialPlayer2 = {
-    id: 2,
-    x: 720,
-    y: 500,
-    width: 30,
-    height: 50,
-    color: 'blue',
-    yVelocity: 0,
-    bullets: [],
-    lastShotTime: 0,
-    jumpsLeft: maxJumps,
-    isAlive: true,
-    controls: {
-        left: 'ArrowLeft',
-        right: 'ArrowRight',
-        jump: 'ArrowUp',
-        down: 'ArrowDown',
-        shoot: '0'
-    }
-};
-
 let players = [
-    { ...initialPlayer1 },
-    { ...initialPlayer2 }
+    new Player(Player1Config),
+    new Player(Player2Config)
 ];
 
 const platforms = [
@@ -74,16 +29,11 @@ const platforms = [
     { x: 50, y: 200, width: 100, height: 20, color: '#795548' }
 ];
 
-const keys = {};
-document.addEventListener('keydown', (e) => {
-    keys[e.key] = true;
-    if(isGameOver && e.key === 'Enter') resetGame();
-    
-});
-document.addEventListener('keyup', (e) => {
-    keys[e.key] = false;
-});
+// 키 입력 함수
+setupInput();
 
+// Enter로도 재시작 지원
+if (isGameOver && keys['Enter']) resetGame();
 
 
 // Delta Time 기법을 이용한 프레임 속도 보정
@@ -104,131 +54,19 @@ function gameLoop(timestamp) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    //플랫폼 그리기
     platforms.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, p.width, p.height);
     });
 
     const activePlayers = players.filter(p => p.isAlive);
+    handlePlatformCollision(activePlayers, platforms);
 
     activePlayers.forEach(player => {
-        // Player movement
-        // 델타 타임을 곱하여 속도 보정
-        if (keys[player.controls.left]) {
-            player.x -= playerSpeed * deltaTime * 60; // 60 FPS 기준 보정
-        }
-        if (keys[player.controls.right]) {
-            player.x += playerSpeed * deltaTime * 60;
-        }
-
-        // X축 경계 설정
-        if (player.x < 0) {
-            player.x = 0;
-        }
-        if (player.x + player.width > canvas.width) {
-            player.x = canvas.width - player.width;
-        }
-
-        // Apply gravity
-        player.yVelocity += gravity * deltaTime * 60;
-        player.y += player.yVelocity * deltaTime * 60;
-
-        if (player.y < 0) {
-            player.y = 0;
-            player.yVelocity = 0; // 캔버스 상단에 부딪히면 튕기지 않게 속도를 0으로 만듦
-        }
-
-        // Double jump logic
-        if (keys[player.controls.jump] && player.jumpsLeft > 0) {
-            player.yVelocity = jumpStrength;
-            player.jumpsLeft--;
-            keys[player.controls.jump] = false;
-        }
-
-        // Player-to-player stomping collision detection
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-        if (otherPlayer) {
-            // Check for stomping collision
-            if (player.yVelocity > 0 && // Player is falling
-                player.x < otherPlayer.x + otherPlayer.width &&
-                player.x + player.width > otherPlayer.x &&
-                player.y + player.height > otherPlayer.y &&
-                player.y + player.height < otherPlayer.y + otherPlayer.height / 2) {
-
-                // Player stomped on otherPlayer!
-                player.yVelocity = jumpStrength; // Bounce up
-                player.jumpsLeft = maxJumps; // Reset jumps
-                otherPlayer.isAlive = false; // Remove the stomped player
-                console.log(`${player.color} player stomped on ${otherPlayer.color}!`);
-            }
-        }
-
-        // Collision detection with platforms
-        platforms.forEach(p => {
-            if (player.x < p.x + p.width &&
-                player.x + player.width > p.x &&
-                player.y + player.height > p.y &&
-                player.y + player.height < p.y + p.height + player.height) {
-
-                if (player.yVelocity > 0) {
-                    player.y = p.y - player.height;
-                    player.yVelocity = 0;
-                    player.jumpsLeft = maxJumps;
-                }
-            }
-        });
-
-        // Shooting logic with cooldown
-        if (keys[player.controls.shoot] && (timestamp - player.lastShotTime > bulletCooldown)) {
-            let dir = 1;
-            if (keys[player.controls.left]) {
-                dir = -1;
-            } else if (keys[player.controls.right]) {
-                dir = 1;
-            } else {
-                dir = (player.id === 1) ? 1 : -1;
-            }
-
-            player.bullets.push({
-                x: player.x + player.width / 2,
-                y: player.y + player.height / 2,
-                dir: dir
-            });
-            player.lastShotTime = timestamp;
-        }
-
-        // Draw the player
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-    });
-
-    // Update and draw bullets for all players
-    activePlayers.forEach(player => {
-        player.bullets = player.bullets.filter(bullet => {
-            bullet.x += bullet.dir * bulletSpeed * deltaTime * 60;
-
-            const otherPlayer = activePlayers.find(p => p.id !== player.id);
-            if (otherPlayer) {
-                if (bullet.x > otherPlayer.x &&
-                    bullet.x < otherPlayer.x + otherPlayer.width &&
-                    bullet.y > otherPlayer.y &&
-                    bullet.y < otherPlayer.y + otherPlayer.height) {
-
-                    console.log(`${player.color} player hit ${otherPlayer.color} player!`);
-                    otherPlayer.isAlive = false;
-                    return false;
-                }
-            }
-
-            return bullet.x > 0 && bullet.x < canvas.width;
-        });
-
-        player.bullets.forEach(bullet => {
-            ctx.fillStyle = player.color;
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y, bulletSize, 0, Math.PI * 2);
-            ctx.fill();
-        });
+        player.update(keys, deltaTime, canvas, otherPlayer, timestamp)
+        player.draw(ctx);
     });
 
     // If a player is no longer alive, a simple game over message can be added here.
@@ -257,6 +95,11 @@ function gameLoop(timestamp) {
         return; // 게임 루프 중단
     }
 
+    // 둘다 살아 있을 때 충돌 분리
+    if(activePlayers.length >= 2)
+        resolveOverlap(activePlayers[0], activePlayers[1]);
+
+
     animationId = requestAnimationFrame(gameLoop);
 
 }
@@ -274,13 +117,13 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-//새로추가
+// 게임 재시작
 function resetGame() {
     // 플레이어의 초기 상태를 다시 설정
     //스프레드 문법으로 객체복사
     players = [
-        { ...initialPlayer1 },
-        { ...initialPlayer2 }
+        new Player(Player1Config),
+        new Player(Player2Config)
     ];
 
     // 게임 상태 초기화
