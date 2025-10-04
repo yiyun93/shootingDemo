@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Player Platformer Shooter</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #222;
+            border: 2px solid #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Two-Player Platformer Shooter</h1>
+    <div style="display: flex; justify-content: space-around; width: 100%; max-width: 800px; margin-bottom: 10px;">
+        <p id="player1Score" style="color: red; font-size: 1.5em; font-weight: bold;">Player 1 : 0</p>
+        <p id="player2Score" style="color: blue; font-size: 1.5em; font-weight: bold;">Player 2 : 0</p>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="restartButton" style="display: none; margin-top: 20px; padding: 10px 20px; font-size: 1.2em;">다시 시작</button>
+    <script type="module" src="./src/tempMain.js"></script>
+</body>
+</html>
