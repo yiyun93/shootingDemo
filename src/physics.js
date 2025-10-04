@@ -1,3 +1,5 @@
+import { maxJumps } from "./constants";
+
 // Axis-Aligned Bounding Box collision
 export function isColliding(a, b) {
     return (
