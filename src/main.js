@@ -32,10 +32,6 @@ const platforms = [
 // 키 입력 함수
 setupInput();
 
-// Enter로도 재시작 지원
-if (isGameOver && keys['Enter']) resetGame();
-
-
 // Delta Time 기법을 이용한 프레임 속도 보정
 let lastTime = 0;
 
@@ -43,10 +39,6 @@ let lastTime = 0;
 let animationId = null;
 
 function gameLoop(timestamp) {
-    if (isGameOver) {
-        // 게임 오버 상태일 때는 루프를 실행하지 않음
-        return;
-    }
 
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
@@ -92,7 +84,6 @@ function gameLoop(timestamp) {
 
         // 게임 루프를 멈추고 버튼을 표시
         restartButton.style.display = 'block';
-        return; // 게임 루프 중단
     }
 
     // 둘다 살아 있을 때 충돌 분리
@@ -102,6 +93,8 @@ function gameLoop(timestamp) {
 
     animationId = requestAnimationFrame(gameLoop);
 
+    // Enter로도 재시작 지원
+    if (isGameOver && keys['Enter']) resetGame();
 }
 
 // 탭 가시성 변경 이벤트 리스너 추가
