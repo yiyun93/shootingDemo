@@ -40,7 +40,8 @@ export default class Player {
 
   stomp(otherPlayer) {
     if (otherPlayer) {
-      if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 3) {
+      if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
+          this.x < otherPlayer.x + otherPlayer.width*0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width*0.3 ) {
         this.yVelocity = jumpStrength; // 튕겨오르기
         this.jumpsLeft = maxJumps - 1; // 공중점프 초기화
         otherPlayer.isAlive = false;
