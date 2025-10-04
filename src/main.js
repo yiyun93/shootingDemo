@@ -39,6 +39,12 @@ let lastTime = 0;
 let animationId = null;
 
 function gameLoop(timestamp) {
+    // 델타 타임 계산 (밀리초를 초 단위로 변환)
+    const deltaTime = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     // 게임오버 텍스트 표시
     if (isGameOver) {
         ctx.font = '40px Arial';
@@ -46,12 +52,6 @@ function gameLoop(timestamp) {
         ctx.textAlign = 'center';
         ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
     }
-
-    // 델타 타임 계산 (밀리초를 초 단위로 변환)
-    const deltaTime = (timestamp - lastTime) / 1000;
-    lastTime = timestamp;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     //플랫폼 그리기
     platforms.forEach(p => {
