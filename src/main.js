@@ -12,7 +12,7 @@ const canvasWrapper = document.getElementById('canvas-wrapper');
 initializeCanvasManager(canvasWrapper);
 
 let gameCanvas;
-let gamegameCtx;
+let gameCtx;
 
 const { canvas, ctx } = recreateCanvas(map.width, map.height);
 gameCanvas = canvas;
