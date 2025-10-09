@@ -123,7 +123,6 @@ function resetGame() {
     isGameOver = false;
     restartButton.style.display = 'none'; // 버튼 숨기기
     lastTime = performance.now();
-    animationId = requestAnimationFrame(gameLoop);
 }
 
 restartButton.addEventListener('click', resetGame);

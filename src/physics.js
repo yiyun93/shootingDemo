@@ -24,9 +24,9 @@ export function handlePlatformCollision(players, platforms){
                     targetOnGround = true;
                 }
             }
-            if(player.onGround != targetOnGround) console.log(`${player.color} player is on Ground : ${targetOnGround}`)
-            player.onGround = targetOnGround;
         })
+        if(player.onGround != targetOnGround) console.log(`${player.color} player is on Ground : ${targetOnGround}`)
+        player.onGround = targetOnGround;
     })
 }
 
