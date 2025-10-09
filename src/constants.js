@@ -13,7 +13,7 @@ const playerAccel = 3000;
 
 
 //총알관련
-const bulletSpeed = 900;
+const bulletSpeed = 800;
 const bulletSize = 5;
 
 export {GRAVITY, FRICTION, playerSpeed, jumpStrength, maxJumps, playerAccel, bulletSpeed, bulletSize, shootCooldown};

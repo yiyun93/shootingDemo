@@ -59,8 +59,8 @@ export function resolveOverlap(a, b) {
     a.x += moveA;
     b.x += moveB;
 
-    a.vx *= 0.6;
-    b.vx *= 0.6;
+    a.vx *= 0.8;
+    b.vx *= 0.8;
 
   } else {
     // Y 축으로 분리
@@ -71,8 +71,8 @@ export function resolveOverlap(a, b) {
     b.y += moveB;
 
     // 속도 감쇠: 서로 밀쳐내는 효과(끼임 방지)
-    a.vy *= 0.6;
-    b.vy *= 0.6;
+    a.vy *= 0.8;
+    b.vy *= 0.8;
   }
 }
 
