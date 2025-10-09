@@ -1,11 +1,22 @@
 import { Player1Config, Player2Config } from './playerConfigs.js';
-import { map } from './map.js';
-import { keys, setupInput } from './input.js';
+import { maps } from './maps.js';
+import { keys, setupInput } from './inputManager.js';
 import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
 import Player from './Player.js';
+import { initializeCanvasManager, recreateCanvas } from './canvasManager.js';
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+
+let map = maps[0];
+
+const canvasWrapper = document.getElementById('canvas-wrapper');
+initializeCanvasManager(canvasWrapper);
+
+let gameCanvas;
+let gamegameCtx;
+
+const { canvas, ctx } = recreateCanvas(map.width, map.height);
+gameCanvas = canvas;
+gameCtx = ctx;
 
 let isGameOver = false; // 게임 상태를 추적하는 변수
 const restartButton = document.getElementById('restartButton'); // 버튼 엘리먼트 가져오기
@@ -22,7 +33,7 @@ let players = [
     new Player(Player2Config)
 ];
 
-const platforms = map[0].platforms;
+let platforms = map.platforms;
 
 // 키 입력 함수
 setupInput();
@@ -38,20 +49,20 @@ function gameLoop(timestamp) {
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
     //플랫폼 그리기
     platforms.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.width, p.height);
+        gameCtx.fillStyle = p.color;
+        gameCtx.fillRect(p.x, p.y, p.width, p.height);
     });
 
     // 게임오버 텍스트 표시
     if (isGameOver) {
-        ctx.font = '40px Arial';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
+        gameCtx.font = '40px Arial';
+        gameCtx.fillStyle = 'white';
+        gameCtx.textAlign = 'center';
+        gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
     }
 
     const activePlayers = players.filter(p => p.isAlive);
@@ -59,8 +70,8 @@ function gameLoop(timestamp) {
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-        player.update(keys, deltaTime, canvas, otherPlayer, timestamp)
-        player.draw(ctx);
+        player.update(keys, deltaTime, gameCanvas, otherPlayer, timestamp)
+        player.draw(gameCtx);
     });
 
     // 둘다 살아 있을 때 충돌 분리
@@ -76,10 +87,10 @@ function gameLoop(timestamp) {
         if (winner) {
             if (winner.id === 1) {
                 player1Wins++;
-                player1ScoreElement.innerText = `Player 1 : ${player1Wins}`;
+                player1ScoreElement.innerText = player1Wins;
             } else if (winner.id === 2) {
                 player2Wins++;
-                player2ScoreElement.innerText = `Player 2 : ${player2Wins}`;
+                player2ScoreElement.innerText = player2Wins;
             }
         }
 

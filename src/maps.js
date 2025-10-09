@@ -1,8 +1,8 @@
-const map = [
+const maps = [
     {
         id: 0,
-        canvasHeight: 600,
-        canvasWidth: 800,
+        height: 600,
+        width: 800,
         platforms: [
             { x: 0, y: 550, width: 800, height: 50, color: '#4CAF50' },
             { x: 150, y: 400, width: 200, height: 20, color: '#795548' },
@@ -12,4 +12,4 @@ const map = [
     }
 ]
 
-export { map };
+export { maps };
