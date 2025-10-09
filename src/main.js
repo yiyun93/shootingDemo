@@ -52,12 +52,6 @@ function gameLoop(timestamp) {
         ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
     }
 
-    //플랫폼 그리기
-    platforms.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.width, p.height);
-    });
-
     const activePlayers = players.filter(p => p.isAlive);
     handlePlatformCollision(activePlayers, platforms);
 
@@ -65,6 +59,16 @@ function gameLoop(timestamp) {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
         player.update(keys, deltaTime, canvas, otherPlayer, timestamp)
         player.draw(ctx);
+    });
+
+    // 둘다 살아 있을 때 충돌 분리
+    if (activePlayers.length >= 2)
+        resolveOverlap(activePlayers[0], activePlayers[1]);
+    
+    //플랫폼 그리기
+    platforms.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.width, p.height);
     });
 
     // If a player is no longer alive, a simple game over message can be added here.
@@ -86,11 +90,6 @@ function gameLoop(timestamp) {
         // 게임 루프를 멈추고 버튼을 표시
         restartButton.style.display = 'block';
     }
-
-    // 둘다 살아 있을 때 충돌 분리
-    if (activePlayers.length >= 2)
-        resolveOverlap(activePlayers[0], activePlayers[1]);
-
 
     animationId = requestAnimationFrame(gameLoop);
 

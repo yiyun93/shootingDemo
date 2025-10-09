@@ -13,7 +13,7 @@ export function isColliding(a, b) {
 // 플랫폼 밟기 처리
 export function handlePlatformCollision(players, platforms){
     players.forEach(player => {
-        player.onGround = false;
+        let targetOnGround = false;
         platforms.forEach(platform => {
             if (isColliding(player,platform)) {
                 // 상반신이 플랫폼보다 높이 있다면 플랫폼 밟기
@@ -21,9 +21,11 @@ export function handlePlatformCollision(players, platforms){
                     player.y = platform.y - player.height;
                     player.vy = 0;
                     player.jumpsLeft = extraJump;
-                    player.onGround = true;
+                    targetOnGround = true;
                 }
             }
+            if(player.onGround != targetOnGround) console.log(`${player.color} player is on Ground : ${targetOnGround}`)
+            player.onGround = targetOnGround;
         })
     })
 }
