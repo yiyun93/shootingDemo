@@ -10,22 +10,20 @@ export default class Player {
 
   move(keys, deltaTime, canvasWidth) {
     // ------------- x축 움직임 -------------
-    if (keys[this.controls.left] && keys[this.controls.right]) {
-      // 동시 입력시 멈춤 (vx가 감속 로직을 통해 0으로 수렴)
-    } else if (keys[this.controls.left]) {
+    if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -playerSpeed) {
       this.vx -= playerAccel * deltaTime;
-    } else if (keys[this.controls.right]) {
+    }
+    else if (!keys[this.controls.left] && keys[this.controls.right] && this.vx < playerSpeed) {
       this.vx += playerAccel * deltaTime;
-    } else {
+    }
+    else { // 양쪽 키 동시 입력 또는 키를 놓았을 때
       this.vx *= (1 - FRICTION * deltaTime);
-
       // 떨림 방지
       if (Math.abs(this.vx) < 0.1) {
         this.vx = 0;
       }
     }
 
-    this.vx = Math.max(-playerSpeed, Math.min(this.vx, playerSpeed));
     this.x += this.vx * deltaTime;
 
     // X축 경계 설정
