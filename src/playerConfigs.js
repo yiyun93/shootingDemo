@@ -1,4 +1,4 @@
-import { maxJumps } from './constants.js';
+import { extraJump } from './constants.js';
 
 export const Player1Config = {
     id: 1,
@@ -11,7 +11,8 @@ export const Player1Config = {
     color: 'red',
     bullets: [],
     lastShotTime: 0,
-    jumpsLeft: maxJumps,
+    jumpsLeft: extraJump,
+    onGround: true,
     isAlive: true,
     controls: {
         left: 'a',
@@ -33,7 +34,8 @@ export const Player2Config = {
     color: 'blue',
     bullets: [],
     lastShotTime: 0,
-    jumpsLeft: maxJumps,
+    jumpsLeft: extraJump,
+    onGround: true,
     isAlive: true,
     controls: {
         left: 'ArrowLeft',

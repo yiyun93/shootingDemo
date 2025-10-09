@@ -1,4 +1,4 @@
-import { GRAVITY, playerSpeed, jumpStrength, maxJumps, bulletSpeed, bulletSize, shootCooldown } from './constants.js';
+import { GRAVITY, playerSpeed, jumpStrength, extraJump, bulletSpeed, bulletSize, shootCooldown } from './constants.js';
 import { Player1Config, Player2Config } from './playerConfigs.js';
 import { keys, setupInput } from './input.js';
 import { isColliding, handlePlatformCollision, resolveOverlap } from './physics.js';

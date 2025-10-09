@@ -7,7 +7,7 @@ const FRICTION = 9; // 5~30
 //플레이어 관련
 const playerSpeed = 400;
 const jumpStrength = -600;
-const maxJumps = 2;
+const extraJump = 1;
 const shootCooldown = 300;
 const playerAccel = 3000;
 
@@ -16,4 +16,4 @@ const playerAccel = 3000;
 const bulletSpeed = 800;
 const bulletSize = 5;
 
-export {GRAVITY, FRICTION, playerSpeed, jumpStrength, maxJumps, playerAccel, bulletSpeed, bulletSize, shootCooldown};
+export {GRAVITY, FRICTION, playerSpeed, jumpStrength, extraJump, playerAccel, bulletSpeed, bulletSize, shootCooldown};

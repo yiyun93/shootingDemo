@@ -1,5 +1,5 @@
 import Bullet from "./Bullet.js";
-import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, maxJumps, shootCooldown } from "./constants.js";
+import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, extraJump, shootCooldown } from "./constants.js";
 import { isColliding } from "./physics.js";
 
 
@@ -38,10 +38,11 @@ export default class Player {
 
     // ------------- y축 움직임 -------------
     // 점프 로직
-    if (keys[this.controls.jump] && this.jumpsLeft > 0) {
+    if (keys[this.controls.jump] && (this.onGround || this.jumpsLeft > 0)) {
+      if(!this.onGround) this.jumpsLeft--;
       this.vy = jumpStrength;
-      this.jumpsLeft--;
       keys[this.controls.jump] = false;
+      this.onGround = false;
     }
 
     this.vy += GRAVITY * deltaTime;
@@ -59,7 +60,7 @@ export default class Player {
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
         this.vy = jumpStrength; // 튕겨오르기
-        this.jumpsLeft = maxJumps - 1; // 공중점프 초기화
+        this.jumpsLeft = extraJump - 1; // 공중점프 초기화
         otherPlayer.isAlive = false;
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
       }
