@@ -41,11 +41,13 @@ export default class Player {
 
     // ------------------------ y축 움직임 ------------------------
     // 점프 로직
-    if(!keys[this.controls.jump]) this.canJump = true;
+    if(!keys[this.controls.jump]) this.canJump = true; // 너무 빠른 연속점프 입력 방지, 점프키를 땟다가 다시 눌러야만 다중 점프 가능
     if (this.canJump && keys[this.controls.jump] && this.jumpsLeft > 0) {
-      if (!this.onGround) this.jumpsLeft--;
+      if (!this.onGround) {
+        this.jumpsLeft--;
+        console.log(`${this.color} player jumped on the ground`);
+      } else console.log(`${this.color} player jumped on the air`);
       this.vy = jumpStrength;
-      keys[this.controls.jump] = false;
       this.canJump = false;
     }
 
