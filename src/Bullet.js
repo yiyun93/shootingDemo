@@ -11,7 +11,7 @@ export default class Bullet {
     }
 
     update(deltaTime) {
-        this.x += this.dir * bulletSpeed * deltaTime * 60;
+        this.x += this.dir * bulletSpeed * deltaTime;
     }
 
     draw(ctx) {

@@ -13,11 +13,11 @@ export default class Player {
     if (keys[this.controls.left] && keys[this.controls.right]) {
       // 동시 입력시 멈춤 (vx가 감속 로직을 통해 0으로 수렴)
     } else if (keys[this.controls.left]) {
-      this.vx -= playerAccel * deltaTime * 60;
+      this.vx -= playerAccel * deltaTime;
     } else if (keys[this.controls.right]) {
-      this.vx += playerAccel * deltaTime * 60;
+      this.vx += playerAccel * deltaTime;
     } else {
-      this.vx *= (1 - FRICTION * deltaTime * 60);
+      this.vx *= (1 - FRICTION * deltaTime);
 
       // 떨림 방지
       if (Math.abs(this.vx) < 0.1) {
@@ -26,7 +26,7 @@ export default class Player {
     }
 
     this.vx = Math.max(-playerSpeed, Math.min(this.vx, playerSpeed));
-    this.x += this.vx * deltaTime * 60;
+    this.x += this.vx * deltaTime;
 
     // X축 경계 설정
     if (this.x < 0) {
@@ -46,8 +46,8 @@ export default class Player {
       keys[this.controls.jump] = false;
     }
 
-    this.vy += GRAVITY * deltaTime * 60;
-    this.y += this.vy * deltaTime * 60;
+    this.vy += GRAVITY * deltaTime;
+    this.y += this.vy * deltaTime;
 
     if (this.y < 0) {
       this.y = 0;
