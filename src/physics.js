@@ -16,9 +16,9 @@ export function handlePlatformCollision(players, platforms){
         platforms.forEach(platform => {
             if (isColliding(player,platform)) {
                 // 상반신이 플랫폼보다 높이 있다면 플랫폼 밟기
-                if (player.yVelocity > 0 && player.y + player.height/2 < platform.y) {
+                if (player.vy > 0 && player.y + player.height/2 < platform.y) {
                     player.y = platform.y - player.height;
-                    player.yVelocity = 0;
+                    player.vy = 0;
                     player.jumpsLeft = maxJumps;
                 }
             }
@@ -59,6 +59,9 @@ export function resolveOverlap(a, b) {
     a.x += moveA;
     b.x += moveB;
 
+    a.vx *= 0.6;
+    b.vx *= 0.6;
+
   } else {
     // Y 축으로 분리
     const sign = Math.sign(dy) || 1;
@@ -68,7 +71,12 @@ export function resolveOverlap(a, b) {
     b.y += moveB;
 
     // 속도 감쇠: 서로 밀쳐내는 효과(끼임 방지)
-    a.yVelocity *= 0.6;
-    b.yVelocity *= 0.6;
+    a.vy *= 0.6;
+    b.vy *= 0.6;
   }
+}
+
+export function applyKnockback(player, forceX, forceY) {
+    player.vx += forceX;
+    player.vy += forceY;
 }

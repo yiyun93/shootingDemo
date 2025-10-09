@@ -1,5 +1,5 @@
 import Bullet from "./Bullet.js";
-import { GRAVITY, playerSpeed, jumpStrength, maxJumps, shootCooldown } from "./constants.js";
+import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, maxJumps, shootCooldown } from "./constants.js";
 import { isColliding } from "./physics.js";
 
 
@@ -9,32 +9,49 @@ export default class Player {
   }
 
   move(keys, deltaTime, canvasWidth) {
-    // 좌우 움직임
-    if (keys[this.controls.left]) this.x -= playerSpeed * deltaTime * 60;
-    if (keys[this.controls.right]) this.x += playerSpeed * deltaTime * 60;
+    // ------------- x축 움직임 -------------
+    if (keys[this.controls.left] && keys[this.controls.right]) {
+      // 동시 입력시 멈춤 (vx가 감속 로직을 통해 0으로 수렴)
+    } else if (keys[this.controls.left]) {
+      this.vx -= playerAccel * deltaTime;
+    } else if (keys[this.controls.right]) {
+      this.vx += playerAccel * deltaTime;
+    } else {
+      this.vx *= (1 - FRICTION * deltaTime);
 
-    // 점프 로직
-    if (keys[this.controls.jump] && this.jumpsLeft > 0) {
-      this.yVelocity = jumpStrength;
-      this.jumpsLeft--;
-      keys[this.controls.jump] = false;
+      // 떨림 방지
+      if (Math.abs(this.vx) < 0.1) {
+        this.vx = 0;
+      }
     }
+
+    this.vx = Math.max(-playerSpeed, Math.min(this.vx, playerSpeed));
+    this.x += this.vx * deltaTime;
 
     // X축 경계 설정
     if (this.x < 0) {
       this.x = 0;
+      this.vx = 0;
     }
     if (this.x + this.width > canvasWidth) {
       this.x = canvasWidth - this.width;
+      this.vx = 0;
     }
 
-    // 중력 적용
-    this.yVelocity += GRAVITY * deltaTime * 60;
-    this.y += this.yVelocity * deltaTime * 60;
+    // ------------- y축 움직임 -------------
+    // 점프 로직
+    if (keys[this.controls.jump] && this.jumpsLeft > 0) {
+      this.vy = jumpStrength;
+      this.jumpsLeft--;
+      keys[this.controls.jump] = false;
+    }
+
+    this.vy += GRAVITY * deltaTime * 60;
+    this.y += this.vy * deltaTime * 60;
 
     if (this.y < 0) {
       this.y = 0;
-      this.yVelocity = 0; // 캔버스 상단에 부딪히면 튕기지 않게 속도를 0으로 만듦
+      this.vy = 0; // 캔버스 상단에 부딪히면 튕기지 않게 속도를 0으로 만듦
     }
   }
 
@@ -42,8 +59,8 @@ export default class Player {
     if (otherPlayer) {
       // 상대방의 머리에서 5분의 1 지점, 좌우 0.3~0.7 지점을 밟으면 stomp 판정
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
-          this.x < otherPlayer.x + otherPlayer.width*0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width*0.3 ) {
-        this.yVelocity = jumpStrength; // 튕겨오르기
+        this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
+        this.vy = jumpStrength; // 튕겨오르기
         this.jumpsLeft = maxJumps - 1; // 공중점프 초기화
         otherPlayer.isAlive = false;
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
@@ -92,7 +109,7 @@ export default class Player {
   update(keys, deltaTime, canvas, otherPlayer, timestamp) {
     // 이동, 점프, 물리 처리 등
     this.move(keys, deltaTime, canvas.width);
-    if(otherPlayer) this.stomp(otherPlayer);
+    if (otherPlayer) this.stomp(otherPlayer);
     this.shoot(keys, timestamp);
     this.updateBullets(otherPlayer, deltaTime, canvas.width)
   }
