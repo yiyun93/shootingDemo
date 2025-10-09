@@ -115,7 +115,6 @@ document.addEventListener('visibilitychange', () => {
 // 게임 재시작
 function resetGame() {
     // 플레이어의 초기 상태를 다시 설정
-    //스프레드 문법으로 객체복사
     players = [
         new Player(Player1Config),
         new Player(Player2Config)

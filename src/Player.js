@@ -9,7 +9,7 @@ export default class Player {
   }
 
   move(keys, deltaTime, canvasWidth) {
-    // ------------- x축 움직임 -------------
+    // ------------------------ x축 움직임 ------------------------
     if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -playerSpeed) {
       this.vx -= playerAccel * deltaTime;
       this.facing = -1;
@@ -38,13 +38,13 @@ export default class Player {
       this.vx = 0;
     }
 
-    // ------------- y축 움직임 -------------
+
+    // ------------------------ y축 움직임 ------------------------
     // 점프 로직
     if (keys[this.controls.jump] && (this.onGround || this.jumpsLeft > 0)) {
       if (!this.onGround) this.jumpsLeft--;
       this.vy = jumpStrength;
       keys[this.controls.jump] = false;
-      this.onGround = false;
     }
 
     this.vy += GRAVITY * deltaTime;
@@ -111,7 +111,7 @@ export default class Player {
     // 눈
     ctx.fillStyle = 'black';
     ctx.beginPath();
-    ctx.arc(this.x + this.width + this.facing*(this.width/4), this.y + this.height/3, 2, 0, Math.PI * 2);
+    ctx.arc(this.x + this.width/2 + this.facing*(this.width/4), this.y + this.height/3, 2, 0, Math.PI * 2);
     ctx.fill();
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }
