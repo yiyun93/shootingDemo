@@ -45,8 +45,8 @@ export default class Player {
     if (this.canJump && keys[this.controls.jump] && this.jumpsLeft > 0) {
       if (!this.onGround) {
         this.jumpsLeft--;
-        console.log(`${this.color} player jumped on the ground`);
-      } else console.log(`${this.color} player jumped on the air`);
+        console.log(`${this.color} player jumped on the air`);
+      } else console.log(`${this.color} player jumped on the ground`);
       this.vy = jumpStrength;
       this.canJump = false;
     }
