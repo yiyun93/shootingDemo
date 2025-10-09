@@ -41,7 +41,7 @@ export default class Player {
 
     // ------------------------ y축 움직임 ------------------------
     // 점프 로직
-    if (keys[this.controls.jump] && (this.onGround || this.jumpsLeft > 0)) {
+    if (keys[this.controls.jump] && this.jumpsLeft > 0) {
       if (!this.onGround) this.jumpsLeft--;
       this.vy = jumpStrength;
       keys[this.controls.jump] = false;
