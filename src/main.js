@@ -1,6 +1,6 @@
 import { Player1Config, Player2Config } from './playerConfigs.js';
 import { keys, setupInput } from './input.js';
-import { handlePlatformCollision, resolveOverlap } from './physics.js';
+import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
 import Player from './Player.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -49,7 +49,7 @@ function gameLoop(timestamp) {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, p.width, p.height);
     });
-    
+
     // 게임오버 텍스트 표시
     if (isGameOver) {
         ctx.font = '40px Arial';
@@ -69,7 +69,7 @@ function gameLoop(timestamp) {
 
     // 둘다 살아 있을 때 충돌 분리
     if (activePlayers.length >= 2)
-        resolveOverlap(activePlayers[0], activePlayers[1]);
+        resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
 
     // If a player is no longer alive, a simple game over message can be added here.
     if (activePlayers.length < 2 && !isGameOver) {

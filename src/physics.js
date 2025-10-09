@@ -2,7 +2,7 @@ import { extraJump } from "./constants.js";
 
 // Axis-Aligned Bounding Box collision
 export function isColliding(a, b) {
-    const tolerance = 3;
+    const tolerance = 3; // 허용 오차 없을시 플랫폼 밟기 판정 떨림 발생
     return (
         a.x < b.x + b.width &&
         a.x + a.width > b.x &&
@@ -26,13 +26,12 @@ export function handlePlatformCollision(players, platforms){
                 }
             }
         })
-        if(player.onGround != targetOnGround) console.log(`${player.color} player is on Ground : ${targetOnGround}`)
         player.onGround = targetOnGround;
     })
 }
 
 // 겹침 방지
-export function resolveOverlap(a, b) {
+export function resolvePlayerOverlap(a, b) {
   // AABB 중심 좌표
   const aCenterX = a.x + a.width / 2;
   const aCenterY = a.y + a.height / 2;
