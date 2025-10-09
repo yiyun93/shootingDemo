@@ -41,10 +41,12 @@ export default class Player {
 
     // ------------------------ y축 움직임 ------------------------
     // 점프 로직
-    if (keys[this.controls.jump] && this.jumpsLeft > 0) {
+    if(!keys[this.controls.jump]) this.canJump = true;
+    if (this.canJump && keys[this.controls.jump] && this.jumpsLeft > 0) {
       if (!this.onGround) this.jumpsLeft--;
       this.vy = jumpStrength;
       keys[this.controls.jump] = false;
+      this.canJump = false;
     }
 
     this.vy += GRAVITY * deltaTime;
@@ -62,7 +64,7 @@ export default class Player {
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
         this.vy = jumpStrength; // 튕겨오르기
-        this.jumpsLeft = extraJump - 1; // 공중점프 초기화
+        this.jumpsLeft = extraJump; // 공중점프 초기화
         otherPlayer.isAlive = false;
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
       }
@@ -111,7 +113,7 @@ export default class Player {
     // 눈
     ctx.fillStyle = 'black';
     ctx.beginPath();
-    ctx.arc(this.x + this.width/2 + this.facing*(this.width/4), this.y + this.height/3, 2, 0, Math.PI * 2);
+    ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
     ctx.fill();
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }

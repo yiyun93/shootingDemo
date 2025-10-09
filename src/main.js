@@ -1,7 +1,6 @@
-import { GRAVITY, playerSpeed, jumpStrength, extraJump, bulletSpeed, bulletSize, shootCooldown } from './constants.js';
 import { Player1Config, Player2Config } from './playerConfigs.js';
 import { keys, setupInput } from './input.js';
-import { isColliding, handlePlatformCollision, resolveOverlap } from './physics.js';
+import { handlePlatformCollision, resolveOverlap } from './physics.js';
 import Player from './Player.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -115,6 +114,7 @@ document.addEventListener('visibilitychange', () => {
 // 게임 재시작
 function resetGame() {
     // 플레이어의 초기 상태를 다시 설정
+    //스프레드 문법으로 객체복사
     players = [
         new Player(Player1Config),
         new Player(Player2Config)

@@ -21,7 +21,8 @@ export const Player1Config = {
         jump: 'w',
         down: 's',
         shoot: ' '
-    }
+    },
+    canJump: true
 };
 
 export const Player2Config = {
@@ -45,5 +46,6 @@ export const Player2Config = {
         jump: 'ArrowUp',
         down: 'ArrowDown',
         shoot: '0'
-    }
+    },
+    canJump: true
 };
