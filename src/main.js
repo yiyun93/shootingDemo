@@ -18,6 +18,8 @@ const { canvas, ctx } = recreateCanvas(map.width, map.height);
 gameCanvas = canvas;
 gameCtx = ctx;
 
+gameCanvas.style.backgroundColor = map.background;
+
 let isGameOver = false; // 게임 상태를 추적하는 변수
 const restartButton = document.getElementById('restartButton'); // 버튼 엘리먼트 가져오기
 

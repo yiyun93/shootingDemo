@@ -42,7 +42,7 @@ export default class Player {
     // ------------------------ y축 움직임 ------------------------
     // 지상 점프 (onGround 조건으로 점프를 허용)
     if (keys[this.controls.jump] && this.onGround) {
-      console.log(`${this.color} player jumped on the ground`);
+      // console.log(`${this.color} player jumped on the ground`);
       this.vy = jumpStrength;
       this.onGround = false;
       keys[this.controls.jump] = false;
@@ -50,7 +50,7 @@ export default class Player {
     // 공중 점프 (jumpsLeft 조건으로 점프를 허용)
     else if (keys[this.controls.jump] && this.jumpsLeft > 0) {
       this.jumpsLeft--;
-      console.log(`${this.color} player jumped on the air`);
+      // console.log(`${this.color} player jumped on the air`);
       this.vy = jumpStrength;
       keys[this.controls.jump] = false;
     }
