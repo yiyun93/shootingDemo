@@ -41,7 +41,7 @@ export default class Player {
     // ------------- y축 움직임 -------------
     // 점프 로직
     if (keys[this.controls.jump] && (this.onGround || this.jumpsLeft > 0)) {
-      if(!this.onGround) this.jumpsLeft--;
+      if (!this.onGround) this.jumpsLeft--;
       this.vy = jumpStrength;
       keys[this.controls.jump] = false;
       this.onGround = false;
@@ -108,6 +108,11 @@ export default class Player {
   draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
+    // 눈
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(this.x + this.width + this.facing*(this.width/4), this.y + this.height/3, 2, 0, Math.PI * 2);
+    ctx.fill();
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 }
