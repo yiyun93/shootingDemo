@@ -12,9 +12,11 @@ export default class Player {
     // ------------- x축 움직임 -------------
     if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -playerSpeed) {
       this.vx -= playerAccel * deltaTime;
+      this.facing = -1;
     }
     else if (!keys[this.controls.left] && keys[this.controls.right] && this.vx < playerSpeed) {
       this.vx += playerAccel * deltaTime;
+      this.facing = 1;
     }
     else { // 양쪽 키 동시 입력 또는 키를 놓았을 때
       this.vx *= (1 - FRICTION * deltaTime);
@@ -69,22 +71,12 @@ export default class Player {
 
   shoot(keys, timestamp) {
     if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > shootCooldown)) {
-      let dir = 1;
-      if (keys[this.controls.left]) {
-        dir = -1;
-      } else if (keys[this.controls.right]) {
-        dir = 1;
-      } else {
-        dir = (this.id === 1) ? 1 : -1;
-      }
-
       this.bullets.push(new Bullet(
         this.x + this.width / 2,
         this.y + this.height / 2,
-        dir,
+        this.facing,
         this
       ));
-
       this.lastShotTime = timestamp;
     }
   }
