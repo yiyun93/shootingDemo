@@ -60,12 +60,22 @@ function gameLoop(timestamp) {
 
     // 게임오버 텍스트 표시
     if (isGameOver) {
-        gameCtx.font = '40px Arial';
+        gameCtx.font = '50px Arial';
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
-        gameCtx.font = '15px Arial';
+
+        // 다시시작 문구 깜빡이기
+        const timeInCycle = timestamp % 1500;
+        // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
+        const angle = (timeInCycle / BLINK_PERIOD) * 2 * Math.PI;
+        let alpha = (Math.sin(angle) + 1.0) / 2.0;
+
+        gameCtx.globalAlpha = alpha; // 계산된 투명도 적용
+        gameCtx.font = '20px Arial';
+        gameCtx.fillStyle = 'white';
         gameCtx.fillText("press 'Enter' to restart", gameCanvas.width / 2, gameCanvas.height * 0.8);
+        gameCtx.globalAlpha = 1.0;
     }
 
     const activePlayers = players.filter(p => p.isAlive);
