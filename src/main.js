@@ -6,44 +6,34 @@ import Player from './Player.js';
 import { initializeCanvasManager, recreateCanvas } from './canvasManager.js';
 
 
-let map = maps[0];
+let map;
+let platforms;
 
 const canvasWrapper = document.getElementById('canvas-wrapper');
 initializeCanvasManager(canvasWrapper);
-
 let gameCanvas;
 let gameCtx;
 
-const { canvas, ctx } = recreateCanvas(map.width, map.height);
-gameCanvas = canvas;
-gameCtx = ctx;
+let isGameOver; // 게임 상태를 추적하는 변수
 
-gameCanvas.style.backgroundColor = map.background;
-
-let isGameOver = false; // 게임 상태를 추적하는 변수
-
+let players = [];
 //승리 횟수 변수
 let player1Wins = 0;
 let player2Wins = 0;
 const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
-
-let players = [
-    new Player(Player1Config),
-    new Player(Player2Config)
-];
-
-let platforms = map.platforms;
+// Delta Time 기법을 이용한 프레임 속도 보정
+let lastTime;
 
 // 키 입력 함수
 setupInput();
 
-// Delta Time 기법을 이용한 프레임 속도 보정
-let lastTime = 0;
-
 // 게임 루프를 제어할 변수 선언
 let animationId = null;
+
+// 초기 게임 재시작
+resetGame();
 
 function gameLoop(timestamp) {
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
@@ -130,8 +120,15 @@ document.addEventListener('visibilitychange', () => {
 
 // 게임 재시작
 function resetGame() {
-    // 플레이어의 초기 상태를 다시 설정
-    //스프레드 문법으로 객체복사
+    map = maps[Math.floor(Math.random() * maps.length)];
+    platforms = map.platforms;
+
+    const { canvas, ctx } = recreateCanvas(map.width, map.height);
+    gameCanvas = canvas;
+    gameCtx = ctx;
+
+    gameCanvas.style.backgroundColor = map.background;
+    
     players = [
         new Player(Player1Config),
         new Player(Player2Config)

@@ -1,23 +1,21 @@
 const maps = [
     {
         id: 0,
-        name: "기본",
+        name: "default",
         height: 600,
         width: 800,
-        background: '#2c3e50',
+        background: '#87b1dbff',
         platforms: [
             { x: 0, y: 550, width: 800, height: 50, color: '#4CAF50' },
             { x: 150, y: 400, width: 200, height: 20, color: '#795548' },
             { x: 450, y: 300, width: 200, height: 20, color: '#795548' },
             { x: 50, y: 200, width: 100, height: 20, color: '#795548' }
         ]
-    }
-]
+    },
 
-const tempMaps = [
     // 맵 0: 기본 훈련장 (Basic Training Ground)
     {
-        id: 0,
+        id: 1,
         name: "기본 훈련장",
         width: 800,
         height: 600,
@@ -35,9 +33,9 @@ const tempMaps = [
 
     // ---
 
-    // 맵 1: 거울 대칭 아레나 (Mirror Symmetry Arena)
+    // 맵 2: 거울 대칭 아레나 (Mirror Symmetry Arena)
     {
-        id: 1,
+        id: 2,
         name: "대칭 아레나",
         width: 1000,
         height: 700,
@@ -58,9 +56,9 @@ const tempMaps = [
 
     // ---
 
-    // 맵 2: 수직 점령전 (Vertical Capture Point)
+    // 맵 3: 수직 점령전 (Vertical Capture Point)
     {
-        id: 2,
+        id: 3,
         name: "수직 점령전",
         width: 600,
         height: 800, // 높이가 더 긴 맵
@@ -83,9 +81,9 @@ const tempMaps = [
 
     // ---
 
-    // 맵 3: 작은 요새 (Small Fortress)
+    // 맵 4: 작은 요새 (Small Fortress)
     {
-        id: 3,
+        id: 4,
         name: "작은 요새",
         width: 800,
         height: 600,
