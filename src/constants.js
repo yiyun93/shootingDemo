@@ -15,4 +15,4 @@ const playerAccel = 3000;
 const bulletSpeed = 800;
 const bulletSize = 5;
 
-export {GRAVITY, FRICTION, playerSpeed, jumpStrength, extraJump, playerAccel, bulletSpeed, bulletSize, shootCooldown};
+export {GRAVITY, FRICTION, playerSpeed, jumpStrength, extraJump, playerAccel, bulletSpeed, bulletSize};
