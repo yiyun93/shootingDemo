@@ -157,10 +157,21 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
 
     //장전 수 표시
+    ctx.fillStyle = this.color
+    let ammoX = this.x + this.width / 2;
+    let ammoY = this.y - this.height / 5
+    for (let i = 0; i < this.currentAmmo; i++) {
+        ctx.beginPath();
+        ctx.arc(ammoX, ammoY - 3*i, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    /* 장탄수 숫자 표기식 
     ctx.font = '14px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.fillText(this.currentAmmo, this.x + this.width / 2, this.y - this.height / 5);
+    */
   }
 }
 
