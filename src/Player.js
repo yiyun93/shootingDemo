@@ -1,5 +1,5 @@
 import Bullet from "./Bullet.js";
-import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, extraJump } from "./constants.js";
+import { GRAVITY, FRICTION } from "./constants.js";
 import { isColliding } from "./physics.js";
 
 
@@ -10,12 +10,12 @@ export default class Player {
 
   move(keys, deltaTime, canvasWidth) {
     // ------------------------ x축 움직임 ------------------------
-    if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -playerSpeed) {
-      this.vx -= playerAccel * deltaTime;
+    if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -this.speed) {
+      this.vx -= this.accel * deltaTime;
       this.facing = -1;
     }
-    else if (!keys[this.controls.left] && keys[this.controls.right] && this.vx < playerSpeed) {
-      this.vx += playerAccel * deltaTime;
+    else if (!keys[this.controls.left] && keys[this.controls.right] && this.vx < this.speed) {
+      this.vx += this.accel * deltaTime;
       this.facing = 1;
     }
     else { // 양쪽 키 동시 입력 또는 키를 놓았을 때
@@ -43,7 +43,7 @@ export default class Player {
     // 지상 점프 (onGround 조건으로 점프를 허용)
     if (keys[this.controls.jump] && this.onGround) {
       // console.log(`${this.color} player jumped on the ground`);
-      this.vy = jumpStrength;
+      this.vy = this.jumpStrength;
       this.onGround = false;
       keys[this.controls.jump] = false;
     }
@@ -51,7 +51,7 @@ export default class Player {
     else if (keys[this.controls.jump] && this.jumpsLeft > 0) {
       this.jumpsLeft--;
       // console.log(`${this.color} player jumped on the air`);
-      this.vy = jumpStrength;
+      this.vy = this.jumpStrength;
       keys[this.controls.jump] = false;
     }
 
@@ -69,8 +69,8 @@ export default class Player {
       // 상대방의 머리에서 5분의 1 지점, 좌우 0.3~0.7 지점을 밟으면 stomp 판정
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
-        this.vy = jumpStrength; // 튕겨오르기
-        this.jumpsLeft = extraJump; // 공중점프 초기화
+        this.vy = this.jumpStrength; // 튕겨오르기
+        this.jumpsLeft = this.extraJump; // 공중점프 초기화
         otherPlayer.isAlive = false;
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
       }

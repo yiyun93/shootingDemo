@@ -5,14 +5,26 @@ const GRAVITY = 1800;
 const FRICTION = 9; // 5~30
 
 //플레이어 관련
-const playerSpeed = 400;
-const jumpStrength = -600;
-const extraJump = 1;
-const playerAccel = 3000;
+const DEFAULT_PLAYER_SPEED = 400;
+const DEFAULT_PLAYER_ACCEL = 3000;
+
+const DEFAULT_JUMP_STRENGTH = -600;
+const DEFAULT_EXTRA_JUMP = 1;
+
+const DEFAULT_MAX_AMMO = 6;
+// ms 단위
+const DEFAULT_SHOOT_RATE = 300;
+const DEFAULT_RELOAD_DELAY = 1300;
+const DEFAULT_RELOAD_RATE = 700;
 
 
 //총알관련
-const bulletSpeed = 800;
-const bulletSize = 5;
+const BULLET_SPEED = 800;
+const BULLET_SIZE = 5;
 
-export {GRAVITY, FRICTION, playerSpeed, jumpStrength, extraJump, playerAccel, bulletSpeed, bulletSize};
+export {
+    GRAVITY, FRICTION,
+    DEFAULT_PLAYER_SPEED, DEFAULT_PLAYER_ACCEL, DEFAULT_JUMP_STRENGTH, DEFAULT_EXTRA_JUMP,
+    DEFAULT_MAX_AMMO, DEFAULT_SHOOT_RATE, DEFAULT_RELOAD_RATE, DEFAULT_RELOAD_DELAY,
+    BULLET_SPEED, BULLET_SIZE
+}

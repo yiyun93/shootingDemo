@@ -1,5 +1,3 @@
-import { extraJump } from "./constants.js";
-
 // Axis-Aligned Bounding Box collision
 export function isColliding(a, b) {
     const tolerance = 3; // 허용 오차 없을시 플랫폼 밟기 판정 떨림 발생
@@ -21,7 +19,7 @@ export function handlePlatformCollision(players, platforms){
                 if (player.vy >= 0 && player.y + player.height/2 <= platform.y) {
                     player.y = platform.y - player.height;
                     player.vy = 0;
-                    player.jumpsLeft = extraJump;
+                    player.jumpsLeft = player.extraJump;
                     targetOnGround = true;
                 }
             }
