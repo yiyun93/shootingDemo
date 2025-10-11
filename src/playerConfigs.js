@@ -1,4 +1,5 @@
 import {
+    DEFAULT_PLAYER_HEALTH,
     DEFAULT_PLAYER_SPEED,
     DEFAULT_PLAYER_ACCEL,
     DEFAULT_JUMP_STRENGTH,
@@ -11,6 +12,7 @@ import {
 
 export const Player1Config = {
     id: 1,
+    health: DEFAULT_PLAYER_HEALTH,
     x: 50,
     y: 500,
     vx: 0,
@@ -46,6 +48,7 @@ export const Player1Config = {
 
 export const Player2Config = {
     id: 2,
+    health: DEFAULT_PLAYER_HEALTH,
     x: 720,
     y: 500,
     vx: 0,

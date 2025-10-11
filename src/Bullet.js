@@ -1,4 +1,4 @@
-import { BULLET_SPEED, BULLET_SIZE } from "./constants.js";
+import { BULLET_SPEED, BULLET_SIZE, BULLET_KNOCKBACK_POWER } from "./constants.js";
 
 export default class Bullet {
     constructor(x, y, dir, owner) {
@@ -8,6 +8,7 @@ export default class Bullet {
         this.owner = owner; // reference to player
         this.width = BULLET_SIZE;
         this.height = BULLET_SIZE;
+        this.power = BULLET_KNOCKBACK_POWER;
     }
 
     update(deltaTime) {

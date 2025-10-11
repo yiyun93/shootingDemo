@@ -1,6 +1,6 @@
 import Bullet from "./Bullet.js";
 import { GRAVITY, FRICTION } from "./constants.js";
-import { isColliding } from "./physics.js";
+import { applyKnockback, isColliding } from "./physics.js";
 
 
 export default class Player {
@@ -78,7 +78,7 @@ export default class Player {
   }
 
   shoot(keys, timestamp) {
-    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > this.shootRate)  && this.currentAmmo > 0) {
+    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > this.shootRate) && this.currentAmmo > 0) {
       // 총알 생성
       this.bullets.push(new Bullet(
         this.x + this.width / 2,
@@ -89,39 +89,45 @@ export default class Player {
       //탄약소모 및 타이머 리셋
       this.lastShotTime = timestamp;
       this.currentAmmo--;
-      this.reloading = false;  
+      this.reloading = false;
     }
   }
 
   reload(timestamp) {
     if (this.currentAmmo === this.maxAmmo) {
-        this.reloading = false;
-        return; // 탄약이 가득 찼으면 장전 로직 종료
+      this.reloading = false;
+      return; // 탄약이 가득 찼으면 장전 로직 종료
     }
-    
+
     // A. 자동 장전 시작 조건 (탄약이 0이거나, reloadDelay 동안 발사하지 않았을 때)
-    if (!this.reloading && (this.currentAmmo === 0 || timestamp - this.lastShotTime >= this.reloadDelay) ) {
-        this.reloading = true;
-        this.reloadTime = timestamp;
+    if (!this.reloading && (this.currentAmmo === 0 || timestamp - this.lastShotTime >= this.reloadDelay)) {
+      this.reloading = true;
+      this.reloadTime = timestamp;
     }
 
     // B. 장전 실행 로직 reloadRate 마다 장전
     if (this.reloading) {
-        // lastShotTime을 장전 진척도 측정기로 사용 (마지막 발사/장전 시점)
-        if (timestamp - this.reloadTime >= this.reloadRate) {
-            this.currentAmmo++; // 한 발 장전
-            this.reloadTime = timestamp; 
-        }
+      // lastShotTime을 장전 진척도 측정기로 사용 (마지막 발사/장전 시점)
+      if (timestamp - this.reloadTime >= this.reloadRate) {
+        this.currentAmmo++; // 한 발 장전
+        this.reloadTime = timestamp;
+      }
     }
-}
+  }
 
   updateBullets(otherPlayer, deltaTime, canvasWidth) {
     this.bullets = this.bullets.filter(bullet => {
       bullet.update(deltaTime);
 
       if (otherPlayer && isColliding(bullet, otherPlayer)) {
-        otherPlayer.isAlive = false;
-        console.log(`${this.color} player hit ${otherPlayer.color} player!`);
+        // 체력 감소시키고 넉백적용
+        otherPlayer.health--;
+        applyKnockback(otherPlayer, bullet.dir * bullet.power, 0);
+
+        if (otherPlayer.health === 0) {
+          otherPlayer.isAlive = false;
+          console.log(`${this.color} player hit ${otherPlayer.color} player!`);
+        }
         return false;
       }
 
@@ -154,7 +160,7 @@ export default class Player {
     ctx.font = '14px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText(this.currentAmmo, this.x + this.width/2, this.y - this.height/5);
+    ctx.fillText(this.currentAmmo, this.x + this.width / 2, this.y - this.height / 5);
   }
 }
 
