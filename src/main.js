@@ -65,7 +65,7 @@ function gameLoop(timestamp) {
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
         gameCtx.font = '15px Arial';
-        gameCtx.fillText("press 'Enter' to restart", gameCanvas.width / 5, gameCanvas.height / 2);
+        gameCtx.fillText("press 'Enter' to restart", gameCanvas.width / 2, gameCanvas.height * 0.8);
     }
 
     const activePlayers = players.filter(p => p.isAlive);
