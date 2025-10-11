@@ -66,9 +66,10 @@ function gameLoop(timestamp) {
         gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
 
         // 다시시작 문구 깜빡이기
-        const timeInCycle = timestamp % 1500;
+        const blinkPeriod = 1500
+        const timeInCycle = timestamp % blinkPeriod;
         // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
-        const angle = (timeInCycle / 1500) * 2 * Math.PI;
+        const angle = (timeInCycle / blinkPeriod) * 2 * Math.PI;
         let alpha = (Math.sin(angle) + 1.0) / 2.0;
 
         gameCtx.globalAlpha = alpha; // 계산된 투명도 적용
