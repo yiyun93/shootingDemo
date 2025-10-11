@@ -157,7 +157,7 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
 
     //장전 수 표시
-    ctx.fillStyle = this.color
+    ctx.fillStyle = this.color //'#FFD700' 금색 (Gold)
     let ammoX = this.x + this.width / 2;
     let ammoY = this.y - this.height / 5
     for (let i = 0; i < this.currentAmmo; i++) {
