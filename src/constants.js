@@ -8,7 +8,6 @@ const FRICTION = 9; // 5~30
 const playerSpeed = 400;
 const jumpStrength = -600;
 const extraJump = 1;
-const shootCooldown = 300;
 const playerAccel = 3000;
 
 

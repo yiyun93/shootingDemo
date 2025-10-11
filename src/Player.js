@@ -1,5 +1,5 @@
 import Bullet from "./Bullet.js";
-import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, extraJump, shootCooldown } from "./constants.js";
+import { GRAVITY, FRICTION, playerSpeed, playerAccel, jumpStrength, extraJump } from "./constants.js";
 import { isColliding } from "./physics.js";
 
 
@@ -78,7 +78,7 @@ export default class Player {
   }
 
   shoot(keys, timestamp) {
-    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > shootCooldown)  && this.currentAmmo > 0) {
+    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > this.shootRate)  && this.currentAmmo > 0) {
       // 총알 생성
       this.bullets.push(new Bullet(
         this.x + this.width / 2,
@@ -151,7 +151,7 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
 
     //장전 수 표시
-    ctx.font = '10px Arial';
+    ctx.font = '14px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.fillText(this.currentAmmo, this.x + this.width/2, this.y - this.height/5);
