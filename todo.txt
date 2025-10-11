@@ -1,4 +1,2 @@
-vx 최대속도 로직 수정 V
-이단점프 로직수정 (onGround) V
-플레이어 facing(dir) 추가 V
+ammo 추가 6발
 플랫폼 좌우충돌 플랫폼 분리

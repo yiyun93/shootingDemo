@@ -78,16 +78,42 @@ export default class Player {
   }
 
   shoot(keys, timestamp) {
-    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > shootCooldown)) {
+    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > shootCooldown)  && this.currentAmmo > 0) {
+      // 총알 생성
       this.bullets.push(new Bullet(
         this.x + this.width / 2,
         this.y + this.height / 2,
         this.facing,
         this
       ));
+      //탄약소모 및 타이머 리셋
       this.lastShotTime = timestamp;
+      this.currentAmmo--;
+      this.reloading = false;  
     }
   }
+
+  reload(timestamp) {
+    if (this.currentAmmo === this.maxAmmo) {
+        this.reloading = false;
+        return; // 탄약이 가득 찼으면 장전 로직 종료
+    }
+    
+    // A. 자동 장전 시작 조건 (탄약이 0이거나, reloadDelay 동안 발사하지 않았을 때)
+    if (!this.reloading && (this.currentAmmo === 0 || timestamp - this.lastShotTime >= this.reloadDelay) ) {
+        this.reloading = true;
+        this.reloadTime = timestamp;
+    }
+
+    // B. 장전 실행 로직 reloadRate 마다 장전
+    if (this.reloading) {
+        // lastShotTime을 장전 진척도 측정기로 사용 (마지막 발사/장전 시점)
+        if (timestamp - this.reloadTime >= this.reloadRate) {
+            this.currentAmmo++; // 한 발 장전
+            this.reloadTime = timestamp; 
+        }
+    }
+}
 
   updateBullets(otherPlayer, deltaTime, canvasWidth) {
     this.bullets = this.bullets.filter(bullet => {
@@ -110,6 +136,7 @@ export default class Player {
     this.move(keys, deltaTime, canvas.width);
     if (otherPlayer) this.stomp(otherPlayer);
     this.shoot(keys, timestamp);
+    this.reload(timestamp);
     this.updateBullets(otherPlayer, deltaTime, canvas.width)
   }
 
@@ -122,6 +149,12 @@ export default class Player {
     ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
     ctx.fill();
     this.bullets.forEach(bullet => bullet.draw(ctx));
+
+    //장전 수 표시
+    ctx.font = '10px Arial';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.currentAmmo, this.x + this.width/2, this.y - this.height/5);
   }
 }
 
