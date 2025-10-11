@@ -162,7 +162,7 @@ export default class Player {
     let ammoY = this.y - this.height / 5
     for (let i = 0; i < this.currentAmmo; i++) {
         ctx.beginPath();
-        ctx.arc(ammoX, ammoY - 3*i, 2, 0, Math.PI * 2);
+        ctx.arc(ammoX, ammoY - 6*i, 2, 0, Math.PI * 2);
         ctx.fill();
     }
 
