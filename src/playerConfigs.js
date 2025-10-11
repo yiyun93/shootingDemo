@@ -17,7 +17,7 @@ export const Player1Config = {
     currentAmmo: 6,
     reloading: false,
     reloadTime: 0,
-    reloadDelay: 2000, // 2초 후 장전
+    reloadDelay: 1300, // 1.5초 후 장전
     reloadRate: 700,  // 0.7초당 1발 장전
     jumpsLeft: extraJump,
     onGround: true,
@@ -48,7 +48,7 @@ export const Player2Config = {
     currentAmmo: 6,
     reloading: false,
     reloadTime: 0,
-    reloadDelay: 2000,
+    reloadDelay: 1500,
     reloadRate: 700,  
     jumpsLeft: extraJump,
     onGround: true,
