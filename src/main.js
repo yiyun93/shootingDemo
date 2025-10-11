@@ -21,7 +21,6 @@ gameCtx = ctx;
 gameCanvas.style.backgroundColor = map.background;
 
 let isGameOver = false; // 게임 상태를 추적하는 변수
-const restartButton = document.getElementById('restartButton'); // 버튼 엘리먼트 가져오기
 
 //승리 횟수 변수
 let player1Wins = 0;
@@ -65,6 +64,8 @@ function gameLoop(timestamp) {
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
+        gameCtx.font = '15px Arial';
+        gameCtx.fillText("press 'Enter' to restart", gameCanvas.width / 5, gameCanvas.height / 2);
     }
 
     const activePlayers = players.filter(p => p.isAlive);
@@ -95,9 +96,6 @@ function gameLoop(timestamp) {
                 player2ScoreElement.innerText = player2Wins;
             }
         }
-
-        // 게임 루프를 멈추고 버튼을 표시
-        restartButton.style.display = 'block';
     }
 
     animationId = requestAnimationFrame(gameLoop);
@@ -130,10 +128,7 @@ function resetGame() {
 
     // 게임 상태 초기화
     isGameOver = false;
-    restartButton.style.display = 'none'; // 버튼 숨기기
     lastTime = performance.now();
 }
-
-restartButton.addEventListener('click', resetGame);
 
 requestAnimationFrame(gameLoop);
