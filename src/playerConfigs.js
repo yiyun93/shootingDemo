@@ -10,6 +10,7 @@ import {
     DEFAULT_SHOOT_RATE,
     DEFAULT_RESPAWN_DELAY,
     DEFAUAT_DAMAGE,
+    DEFAULT_INVINC_DURATION
 } from './constants.js';
 
 export const Player1Config = {
@@ -41,9 +42,6 @@ export const Player1Config = {
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
-    isAlive: true,
-    deadTime: 0;
-    respawnDelay: DEFAULT_RESPAWN_DELAY,
     controls: {
         left: 'a',
         right: 'd',
@@ -52,9 +50,12 @@ export const Player1Config = {
         shoot: ' '
     },
     // 무적 관련
+    isAlive: true,
+    deadTime: 0,
+    respawnDelay: DEFAULT_RESPAWN_DELAY,
     isInvincible: true,
     invincibilityStartTime: 0,
-    invincibilityDuration: 3000
+    invincibilityDuration: DEFAULT_INVINC_DURATION
 };
 
 export const Player2Config = {
@@ -87,9 +88,6 @@ export const Player2Config = {
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
-    isAlive: true,
-    deadTime: 0;
-    respawnDelay: DEFAULT_RESPAWN_DELAY,
     controls: {
         left: 'ArrowLeft',
         right: 'ArrowRight',
@@ -98,7 +96,10 @@ export const Player2Config = {
         shoot: '0'
     },
     // 무적 관련
+    isAlive: true,
+    deadTime: 0,
+    respawnDelay: DEFAULT_RESPAWN_DELAY,
     isInvincible: true,
     invincibilityStartTime: 0,
-    invincibilityDuration: 3000
+    invincibilityDuration: DEFAULT_INVINC_DURATION
 };
