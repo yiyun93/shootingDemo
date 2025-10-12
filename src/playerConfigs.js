@@ -29,6 +29,7 @@ export const Player1Config = {
     facing: 1,
     color: 'red',
     // 총알 관련
+    damage: DEFAUAT_DAMAGE,
     shootRate: DEFAULT_SHOOT_RATE,
     bullets: [],
     lastShotTime: 0,

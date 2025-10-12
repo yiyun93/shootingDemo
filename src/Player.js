@@ -65,7 +65,7 @@ export default class Player {
     }
   }
 
-  stomp(otherPlayer) {
+  stomp(otherPlayer, timestamp) {
     if (otherPlayer) {
       // 상대방의 머리에서 5분의 1 지점, 좌우 0.3~0.7 지점을 밟으면 stomp 판정
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
@@ -73,7 +73,7 @@ export default class Player {
         this.vy = this.jumpStrength; // 튕겨오르기
         this.jumpsLeft = this.extraJump; // 공중점프 초기화
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
-        killPlayer(otherPlayer);
+        killPlayer(otherPlayer, timestamp);
       }
     }
   }
@@ -127,9 +127,9 @@ export default class Player {
         otherPlayer.health -= this.damage;
         applyKnockback(otherPlayer, bullet.dir * bullet.power, 0);
 
-        if (otherPlayer.health === 0) {
+        if (otherPlayer.health <= 0) {
           console.log(`${this.color} player hit ${otherPlayer.color} player!`);
-          killPlayer(otherPlayer)
+          killPlayer(otherPlayer, timestamp)
         }
         return false;
       }
