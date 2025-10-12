@@ -13,7 +13,12 @@ const canvasWrapper = document.getElementById('canvas-wrapper');
 initializeCanvasManager(canvasWrapper);
 let gameCanvas;
 let gameCtx;
+
+const GAME_DURATION = 60000; // 60초 (밀리초)
+const timerElement = document.getElementById('timerDisplay');
+const roundElement = document.getElementById('roundCounter');
 let round = 0;
+let roundStartTime;
 
 let isGameOver; // 게임 상태를 추적하는 변수
 
@@ -49,12 +54,27 @@ function gameLoop(timestamp) {
         gameCtx.fillRect(p.x, p.y, p.width, p.height);
     });
 
+    const elapsedTime = timestamp - roundStartTime;
+    const remainingTimeMs = GAME_DURATION - elapsedTime;
+    // 남은 시간(초) 계산 및 정수형으로 변환
+    const remainingSeconds = Math.max(0, Math.ceil(remainingTimeMs / 1000));
+    // HTML 엘리먼트 업데이트
+    timerElement.innerText = remainingSeconds;
+
+    // 라운드 종료 판정
+    if (remainingTimeMs <= 0 && !isGameOver) { 
+        gameActive = false;
+        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
+        isGameOver = true;
+        return;
+    }
+
     // 게임오버 텍스트 표시
     if (isGameOver) {
         gameCtx.font = '50px Arial';
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
-        gameCtx.fillText('Game Over!', gameCanvas.width / 2, gameCanvas.height / 2);
+        gameCtx.fillText('Round Over!', gameCanvas.width / 2, gameCanvas.height / 2);
 
         // 다시시작 문구 깜빡이기
         const blinkPeriod = 1500
@@ -66,7 +86,7 @@ function gameLoop(timestamp) {
         gameCtx.globalAlpha = alpha; // 계산된 투명도 적용
         gameCtx.font = '20px Arial';
         gameCtx.fillStyle = 'white';
-        gameCtx.fillText("press 'Enter' to restart", gameCanvas.width / 2, gameCanvas.height * 0.8);
+        gameCtx.fillText("press 'Enter' to next round", gameCanvas.width / 2, gameCanvas.height * 0.8);
         gameCtx.globalAlpha = 1.0;
     }
 
@@ -125,6 +145,7 @@ function resetGame() {
     map = maps[Math.floor(Math.random() * maps.length)];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
+    roundElement.innerText = `${round} Round`;
 
     const { canvas, ctx } = recreateCanvas(map.width, map.height);
     gameCanvas = canvas;
@@ -140,6 +161,7 @@ function resetGame() {
     // 게임 상태 초기화
     isGameOver = false;
     lastTime = performance.now();
+    roundStartTime = lastTime;
     players.forEach(player => {
         player.isInvincible = true;
         player.invincibilityStartTime = lastTime;

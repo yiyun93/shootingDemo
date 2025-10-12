@@ -101,7 +101,7 @@ export default class Player {
 
     // A. 자동 장전 시작 조건 (탄약이 0이거나, reloadDelay 동안 발사하지 않았을 때)
     if (!this.reloading && (
-      (this.currentAmmo === 0 && timestamp - this.lastShotTime >= this.reloadDelay/2) ||
+      (this.currentAmmo === 0 && timestamp - this.lastShotTime >= this.reloadDelay / 2) ||
       timestamp - this.lastShotTime >= this.reloadDelay)) {
       this.reloading = true;
       this.reloadTime = timestamp;
@@ -160,44 +160,12 @@ export default class Player {
   }
 
   draw(ctx) {
+    // 몸통
     if (this.isInvincible) {
-      const currentTime = performance.now();
-      const elapsedTime = currentTime - this.invincibilityStartTime;
-
-      // 1. 페이드(Fade) 효과를 위한 투명도(Alpha) 계산
-      const cycleDuration = 700; // 0.7초 주기로 페이드인/아웃
-      const phase = (elapsedTime % cycleDuration) / cycleDuration; // 0.0 ~ 1.0
-
-      // Math.sin(x)를 사용하여 0.5 ~ 1.0 범위의 알파 값 생성 (은은하게 깜빡임)
-      const minAlpha = 0.5;
-      const maxAlpha = 1.0;
-      const alphaRange = maxAlpha - minAlpha;
-
-      // 투명도 (0.5에서 1.0 사이를 부드럽게 왕복)
-      const alpha = minAlpha + (alphaRange * (Math.sin(phase * Math.PI * 2) * 0.5 + 0.5));
-
-      // 캔버스 투명도 설정
-      ctx.globalAlpha = alpha;
-
-      // 2. 흰색 색감 오버레이를 위한 Blend Mode 설정 (권장)
-      ctx.globalCompositeOperation = 'lighter';
-    }
-
-    // 1. 플레이어 본체 그리기
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    if (this.isInvincible) {
-        // 흰색 오버레이 레이어 추가
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // 흰색을 40% 투명도로 오버레이
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    // 3. 무적 상태가 끝났거나 드로잉이 완료된 후 상태 초기화
-    if (this.isInvincible) {
-      // [필수] 다음 드로잉을 위해 캔버스 상태 복구
-      ctx.globalAlpha = 1.0;
-      ctx.globalCompositeOperation = 'source-over'; // 기본값으로 복구
+      drawInviciblePlayer(ctx)
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
     // 눈
@@ -223,7 +191,38 @@ export default class Player {
     ctx.fillText(this.currentAmmo, this.x + this.width / 2, this.y - this.height / 5);
     */
 
+    // 탄환
     this.bullets.forEach(bullet => bullet.draw(ctx));
+  }
+
+  drawInviciblePlayer(ctx) {
+    const currentTime = performance.now();
+    const elapsedTime = currentTime - this.invincibilityStartTime;
+
+    // 1. 페이드(Fade) 효과를 위한 투명도(Alpha) 계산
+    const cycleDuration = 700; // 0.7초 주기로 페이드인/아웃
+    const phase = (elapsedTime % cycleDuration) / cycleDuration; // 0.0 ~ 1.0
+
+    // Math.sin(x)를 사용하여 0.5 ~ 1.0 범위의 알파 값 생성 (은은하게 깜빡임)
+    const minAlpha = 0.5;
+    const maxAlpha = 1.0;
+    const alphaRange = maxAlpha - minAlpha;
+
+    // 투명도 (0.5에서 1.0 사이를 부드럽게 왕복)
+    const alpha = minAlpha + (alphaRange * (Math.sin(phase * Math.PI * 2) * 0.5 + 0.5));
+
+    // 캔버스 투명도 설정
+    ctx.globalAlpha = alpha;
+
+    // 1. 플레이어 본체 그리기
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // 흰색 오버레이 레이어 추가
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // 흰색을 40% 투명도로 오버레이
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.globalAlpha = 1.0;
   }
 }
 
