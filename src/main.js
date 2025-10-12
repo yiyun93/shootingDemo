@@ -4,6 +4,7 @@ import { keys, setupInput } from './inputManager.js';
 import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
 import Player from './Player.js';
 import { initializeCanvasManager, recreateCanvas } from './canvasManager.js';
+import { GAME_DURATION } from './constants.js';
 
 
 let map;
@@ -14,7 +15,6 @@ initializeCanvasManager(canvasWrapper);
 let gameCanvas;
 let gameCtx;
 
-const GAME_DURATION = 60000; // 60초 (밀리초)
 const timerElement = document.getElementById('timerDisplay');
 const roundElement = document.getElementById('roundCounter');
 let round = 0;
