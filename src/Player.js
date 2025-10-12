@@ -66,7 +66,7 @@ export default class Player {
   }
 
   stomp(otherPlayer, timestamp) {
-    if (otherPlayer) {
+    if (otherPlayer?.isAlive && !otherPlayer.isInvincible) {
       // 상대방의 머리에서 5분의 1 지점, 좌우 0.3~0.7 지점을 밟으면 stomp 판정
       if (isColliding(this, otherPlayer) && this.y + this.height < otherPlayer.y + otherPlayer.height / 5 &&
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
