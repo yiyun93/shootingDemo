@@ -159,10 +159,41 @@ export default class Player {
     this.updateBullets(otherPlayer, deltaTime, canvas.width)
   }
 
+  // 무적 판정일 때 플레이어 그리기
+  drawInviciblePlayer(ctx) {
+    const currentTime = performance.now();
+    const elapsedTime = currentTime - this.invincibilityStartTime;
+
+    // 1. 페이드(Fade) 효과를 위한 투명도(Alpha) 계산
+    const cycleDuration = 700; // 0.7초 주기로 페이드인/아웃
+    const phase = (elapsedTime % cycleDuration) / cycleDuration; // 0.0 ~ 1.0
+
+    // Math.sin(x)를 사용하여 0.5 ~ 1.0 범위의 알파 값 생성 (은은하게 깜빡임)
+    const minAlpha = 0.5;
+    const maxAlpha = 1.0;
+    const alphaRange = maxAlpha - minAlpha;
+
+    // 투명도 (0.5에서 1.0 사이를 부드럽게 왕복)
+    const alpha = minAlpha + (alphaRange * (Math.sin(phase * Math.PI * 2) * 0.5 + 0.5));
+
+    // 캔버스 투명도 설정
+    ctx.globalAlpha = alpha;
+
+    // 1. 플레이어 본체 그리기
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // 흰색 오버레이 레이어 추가
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // 흰색을 40% 투명도로 오버레이
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.globalAlpha = 1.0;
+  }
+
   draw(ctx) {
     // 몸통
     if (this.isInvincible) {
-      drawInviciblePlayer(ctx)
+      this.drawInviciblePlayer(ctx)
     } else {
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -193,36 +224,6 @@ export default class Player {
 
     // 탄환
     this.bullets.forEach(bullet => bullet.draw(ctx));
-  }
-
-  drawInviciblePlayer(ctx) {
-    const currentTime = performance.now();
-    const elapsedTime = currentTime - this.invincibilityStartTime;
-
-    // 1. 페이드(Fade) 효과를 위한 투명도(Alpha) 계산
-    const cycleDuration = 700; // 0.7초 주기로 페이드인/아웃
-    const phase = (elapsedTime % cycleDuration) / cycleDuration; // 0.0 ~ 1.0
-
-    // Math.sin(x)를 사용하여 0.5 ~ 1.0 범위의 알파 값 생성 (은은하게 깜빡임)
-    const minAlpha = 0.5;
-    const maxAlpha = 1.0;
-    const alphaRange = maxAlpha - minAlpha;
-
-    // 투명도 (0.5에서 1.0 사이를 부드럽게 왕복)
-    const alpha = minAlpha + (alphaRange * (Math.sin(phase * Math.PI * 2) * 0.5 + 0.5));
-
-    // 캔버스 투명도 설정
-    ctx.globalAlpha = alpha;
-
-    // 1. 플레이어 본체 그리기
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    // 흰색 오버레이 레이어 추가
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // 흰색을 40% 투명도로 오버레이
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    ctx.globalAlpha = 1.0;
   }
 }
 

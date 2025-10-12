@@ -62,8 +62,7 @@ function gameLoop(timestamp) {
     timerElement.innerText = remainingSeconds;
 
     // 라운드 종료 판정
-    if (remainingTimeMs <= 0 && !isGameOver) { 
-        gameActive = false;
+    if (remainingTimeMs <= 0 && !isGameOver) {
         console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
         isGameOver = true;
         return;
