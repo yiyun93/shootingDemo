@@ -1,6 +1,7 @@
 import Bullet from "./Bullet.js";
 import { GRAVITY, FRICTION } from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
+import { killPlayer } from "./gameManager.js";
 
 
 export default class Player {
