@@ -186,11 +186,12 @@ export default class Player {
     // 1. 플레이어 본체 그리기
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
-    // 눈
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
-    ctx.fill();
+
+    if (this.isInvincible) {
+        // 흰색 오버레이 레이어 추가
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // 흰색을 40% 투명도로 오버레이
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
 
     // 3. 무적 상태가 끝났거나 드로잉이 완료된 후 상태 초기화
     if (this.isInvincible) {
@@ -198,6 +199,12 @@ export default class Player {
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over'; // 기본값으로 복구
     }
+
+    // 눈
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
+    ctx.fill();
 
     //장전 수 표시
     ctx.fillStyle = this.color //'#FFD700' 금색 (Gold)
