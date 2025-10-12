@@ -138,7 +138,7 @@ export default class Player {
     });
   }
 
-  judgeInvicible() {
+  judgeInvicible(timestamp) {
     if (this.isInvincible) {
       const elapsedTime = timestamp - this.invincibilityStartTime;
 
