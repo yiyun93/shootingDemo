@@ -146,7 +146,7 @@ function resetGame() {
     console.log(`${round} 라운드 : ${map.name} `);
     roundElement.innerText = `${round} Round`;
 
-    const { canvas, ctx } = recreateCanvas(map.width, map.height);
+    const { canvas, ctx } = recreateCanvas(map);
     gameCanvas = canvas;
     gameCtx = ctx;
 
