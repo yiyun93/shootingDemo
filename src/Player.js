@@ -71,8 +71,8 @@ export default class Player {
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
         this.vy = this.jumpStrength; // 튕겨오르기
         this.jumpsLeft = this.extraJump; // 공중점프 초기화
-        otherPlayer.isAlive = false;
         console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
+        killPlayer(otherPlayer);
       }
     }
   }
@@ -117,18 +117,18 @@ export default class Player {
     }
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth) {
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp) {
     this.bullets = this.bullets.filter(bullet => {
       bullet.update(deltaTime);
 
       if (otherPlayer && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
-        otherPlayer.health--;
+        otherPlayer.health -= this.damage;
         applyKnockback(otherPlayer, bullet.dir * bullet.power, 0);
 
         if (otherPlayer.health === 0) {
-          otherPlayer.isAlive = false;
           console.log(`${this.color} player hit ${otherPlayer.color} player!`);
+          killPlayer(otherPlayer)
         }
         return false;
       }
@@ -156,7 +156,7 @@ export default class Player {
     if (otherPlayer) this.stomp(otherPlayer);
     this.shoot(keys, timestamp);
     this.reload(timestamp);
-    this.updateBullets(otherPlayer, deltaTime, canvas.width)
+    this.updateBullets(otherPlayer, deltaTime, canvas.width, timestamp)
   }
 
   // 무적 판정일 때 플레이어 그리기

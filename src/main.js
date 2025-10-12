@@ -102,7 +102,7 @@ function gameLoop(timestamp) {
     if (activePlayers.length >= 2)
         resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
 
-    // If a player is no longer alive, a simple game over message can be added here.
+
     if (activePlayers.length < 2 && !isGameOver) {
         isGameOver = true;
 

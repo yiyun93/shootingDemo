@@ -7,7 +7,9 @@ import {
     DEFAULT_MAX_AMMO,
     DEFAULT_RELOAD_DELAY,
     DEFAULT_RELOAD_RATE,
-    DEFAULT_SHOOT_RATE
+    DEFAULT_SHOOT_RATE,
+    DEFAULT_RESPAWN_DELAY,
+    DEFAUAT_DAMAGE,
 } from './constants.js';
 
 export const Player1Config = {
@@ -40,6 +42,8 @@ export const Player1Config = {
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
     isAlive: true,
+    deadTime: 0;
+    respawnDelay: DEFAULT_RESPAWN_DELAY,
     controls: {
         left: 'a',
         right: 'd',
@@ -69,6 +73,7 @@ export const Player2Config = {
     facing: -1,
     color: 'blue',
     // 총알 관련
+    damage: DEFAUAT_DAMAGE,
     shootRate: DEFAULT_SHOOT_RATE,
     bullets: [],
     lastShotTime: 0,
@@ -83,6 +88,8 @@ export const Player2Config = {
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
     isAlive: true,
+    deadTime: 0;
+    respawnDelay: DEFAULT_RESPAWN_DELAY,
     controls: {
         left: 'ArrowLeft',
         right: 'ArrowRight',
