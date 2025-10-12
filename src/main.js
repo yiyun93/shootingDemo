@@ -13,6 +13,7 @@ const canvasWrapper = document.getElementById('canvas-wrapper');
 initializeCanvasManager(canvasWrapper);
 let gameCanvas;
 let gameCtx;
+let round = 0;
 
 let isGameOver; // 게임 상태를 추적하는 변수
 
@@ -120,8 +121,10 @@ document.addEventListener('visibilitychange', () => {
 
 // 게임 재시작
 function resetGame() {
+    round++;
     map = maps[Math.floor(Math.random() * maps.length)];
     platforms = map.platforms;
+    console.log(`${round} 라운드 : ${map.name} `);
 
     const { canvas, ctx } = recreateCanvas(map.width, map.height);
     gameCanvas = canvas;
@@ -137,6 +140,10 @@ function resetGame() {
     // 게임 상태 초기화
     isGameOver = false;
     lastTime = performance.now();
+    players.forEach(player => {
+        player.isInvincible = true;
+        player.invincibilityStartTime = lastTime;
+    });
 }
 
 requestAnimationFrame(gameLoop);

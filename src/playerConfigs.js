@@ -11,6 +11,7 @@ import {
 } from './constants.js';
 
 export const Player1Config = {
+    // 기본 설정
     id: 1,
     health: DEFAULT_PLAYER_HEALTH,
     x: 50,
@@ -24,6 +25,7 @@ export const Player1Config = {
     height: 50,
     facing: 1,
     color: 'red',
+    // 총알 관련
     shootRate: DEFAULT_SHOOT_RATE,
     bullets: [],
     lastShotTime: 0,
@@ -33,6 +35,7 @@ export const Player1Config = {
     reloadTime: 0,
     reloadDelay: DEFAULT_RELOAD_DELAY,
     reloadRate: DEFAULT_RELOAD_RATE,
+    // 점프판정 관련
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
@@ -43,10 +46,15 @@ export const Player1Config = {
         jump: 'w',
         down: 's',
         shoot: ' '
-    }
+    },
+    // 무적 관련
+    isInvincible: true,
+    invincibilityStartTime: 0,
+    invincibilityDuration: 3000
 };
 
 export const Player2Config = {
+    // 기본 설정
     id: 2,
     health: DEFAULT_PLAYER_HEALTH,
     x: 720,
@@ -60,6 +68,7 @@ export const Player2Config = {
     height: 50,
     facing: -1,
     color: 'blue',
+    // 총알 관련
     shootRate: DEFAULT_SHOOT_RATE,
     bullets: [],
     lastShotTime: 0,
@@ -69,6 +78,7 @@ export const Player2Config = {
     reloadTime: 0,
     reloadDelay: DEFAULT_RELOAD_DELAY,
     reloadRate: DEFAULT_RELOAD_RATE,
+    // 점프판정 관련
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
@@ -79,5 +89,9 @@ export const Player2Config = {
         jump: 'ArrowUp',
         down: 'ArrowDown',
         shoot: '0'
-    }
+    },
+    // 무적 관련
+    isInvincible: true,
+    invincibilityStartTime: 0,
+    invincibilityDuration: 3000
 };

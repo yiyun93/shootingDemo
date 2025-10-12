@@ -1,2 +1,1 @@
-ammo 추가 6발
-플랫폼 좌우충돌 플랫폼 분리
+플랫폼 종류 설정 : hover, wall, lava, boing
