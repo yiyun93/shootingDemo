@@ -24,29 +24,30 @@
         }
 
         #timerDisplay, #roundCounter {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            /* 중앙 정렬 */
-            font-size: 32px;
             color: white;
-            /* 캔버스 배경과 대비되는 색상 */
             font-weight: bold;
             text-shadow: 2px 2px 4px #000000;
-            /* 가독성 향상 */
+            margin: 0;
+        }
+
+        #player1Score, #player2Score {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-top: 0;
+            margin-bottom: 1.5%;
         }
     </style>
 </head>
 
 <body>
-    <p id="roundCounter">Round 1</div>
-    <p id="timerDisplay">60</div>
-    <div style="display: flex; justify-content: space-around; width: 100%; max-width: 800px; margin-bottom: 10px;">
+    <p id="roundCounter" style=" font-size: 1.5em;">Round 1</div>
+    <p id="timerDisplay" style=" font-size: 1.7em;">60</div>
+    <div style="display: flex; justify-content: space-around; width: 100%; max-width: 800px;">
         <p id="player1Score"
-            style="color: red; font-size: 1.5em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">0</p>
+            style="color: red;">0</p>
         <p id="player2Score"
-            style="color: blue; font-size: 1.5em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">0</p>
+            style="color: blue;">0</p>
     </div>
     <div id="canvas-wrapper"></div>
     <script type="module" src="./src/main.js"></script>
