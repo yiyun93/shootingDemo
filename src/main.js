@@ -63,7 +63,6 @@ function gameLoop(timestamp) {
 
     // 라운드 종료 판정
     if (remainingTimeMs <= 0 && !isGameOver) {
-        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
         isGameOver = true;
         return;
     }
@@ -74,6 +73,7 @@ function gameLoop(timestamp) {
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Round Over!', gameCanvas.width / 2, gameCanvas.height / 2);
+        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
 
         // 다시시작 문구 깜빡이기
         const blinkPeriod = 1500
