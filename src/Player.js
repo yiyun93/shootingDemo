@@ -1,7 +1,7 @@
 import Bullet from "./Bullet.js";
 import { GRAVITY, FRICTION } from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
-import { killPlayer } from "./gameManager.js";
+import { countPoint } from "./gameManager.js";
 
 
 export default class Player {
@@ -72,10 +72,16 @@ export default class Player {
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
         this.vy = this.jumpStrength; // 튕겨오르기
         this.jumpsLeft = this.extraJump; // 공중점프 초기화
-        console.log(`${this.color} player stomped on ${otherPlayer.color}!`);
-        killPlayer(otherPlayer, timestamp);
+        this.killPlayer(otherPlayer, timestamp, 'stomped on');
       }
     }
+  }
+
+  killPlayer(deadPlayer, timestamp, cause){
+    countPoint(this);
+    deadPlayer.isAlive = false;
+    deadPlayer.deadTime = timestamp;
+    console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`)
   }
 
   shoot(keys, timestamp) {
@@ -128,8 +134,7 @@ export default class Player {
         applyKnockback(otherPlayer, bullet.dir * bullet.power, 0);
 
         if (otherPlayer.health <= 0) {
-          console.log(`${this.color} player hit ${otherPlayer.color} player!`);
-          killPlayer(otherPlayer, timestamp)
+          this.killPlayer(otherPlayer, timestamp, 'hit')
         }
         return false;
       }
@@ -137,6 +142,24 @@ export default class Player {
       // canvas 나간 bullet 제거
       return (bullet.x > 0 && bullet.x < canvasWidth);
     });
+  }
+  respawn(timestamp) {
+    if (this.isAlive) return false;
+    if (timestamp - this.deadTime < this.respawnDelay) return false;
+
+    this.isAlive = true;
+    this.health = this.maxHealth;
+    this.vx = 0;
+    this.vy = 0;
+    this.x = this.spawnX;
+    this.y = this.spawnY;
+    this.bullets = [];
+    this.setInvincible(timestamp);
+  }
+
+  setInvincible(timestamp) {
+    this.isInvincible = true;
+    this.invincibilityStartTime = timestamp;
   }
 
   judgeInvicible(timestamp) {
@@ -151,12 +174,12 @@ export default class Player {
 
 
   update(options) {
-    const { 
-        keys, 
-        deltaTime, 
-        canvas, 
-        otherPlayer, 
-        timestamp 
+    const {
+      keys,
+      deltaTime,
+      canvas,
+      otherPlayer,
+      timestamp
     } = options;
 
     // 이동, 점프, 물리 처리 등
@@ -235,4 +258,3 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 }
-

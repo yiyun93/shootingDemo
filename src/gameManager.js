@@ -16,8 +16,7 @@ let roundStartTime;
 let isGameOver = false;
 
 let players = [];
-let player1Wins = 0;
-let player2Wins = 0;
+let playerWins = [0, 0];
 
 let lastTime; // deltaTime 계산용
 let animationId = null;
@@ -25,16 +24,15 @@ let animationId = null;
 // 2. DOM 엘리먼트 (main.js에서 인수로 받거나 여기서 직접 가져올 수 있음)
 let timerElement;
 let roundElement;
-let player1ScoreElement;
-let player2ScoreElement;
+let playerScoreElement = [];
 
 // 3. 게임 초기화 (외부에서 호출)
 export function initializeGameManager(domElements) {
     // DOM 엘리먼트 할당
     timerElement = domElements.timer;
     roundElement = domElements.round;
-    player1ScoreElement = domElements.player1Score;
-    player2ScoreElement = domElements.player2Score;
+    playerScoreElement[0] = domElements.player1Score;
+    playerScoreElement[1] = domElements.player2Score;
 
     // 초기 게임 시작
     resetGame();
@@ -64,7 +62,7 @@ function gameLoop(timestamp) {
     // 라운드 종료 판정
     if (remainingTimeMs <= 0 && !isGameOver) {
         isGameOver = true;
-        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
+        console.log(`${round} 라운드 종료. red: ${playerWins[0]}, blue: ${playerWins[1]}`);
     }
 
     // 게임오버 텍스트 표시
@@ -93,7 +91,6 @@ function gameLoop(timestamp) {
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-
         const updateOptions = {
             keys: keys,
             deltaTime: deltaTime,
@@ -110,22 +107,10 @@ function gameLoop(timestamp) {
     if (activePlayers.length >= 2)
         resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
 
-
-    if (activePlayers.length < 2 && !isGameOver) {
-        isGameOver = true;
-        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
-
-        // 승리 횟수 추가 로직
-        const winner = players.find(p => p.isAlive);
-        if (winner) {
-            if (winner.id === 1) {
-                player1Wins++;
-                player1ScoreElement.innerText = player1Wins;
-            } else if (winner.id === 2) {
-                player2Wins++;
-                player2ScoreElement.innerText = player2Wins;
-            }
-        }
+    // 사망자 리스폰
+    if (activePlayers.length < 2) {
+        const dead = players.find(p => !p.isAlive);
+        dead.respawn(timestamp);
     }
 
     // Enter로 재시작 지원
@@ -171,8 +156,7 @@ function resetGame() {
 
     // 모든 플레이어 무적 설정
     players.forEach(player => {
-        player.isInvincible = true;
-        player.invincibilityStartTime = roundStartTime;
+        player.setInvincible(roundStartTime);
     });
 
     // 루프가 이미 실행 중이 아니라면 시작
@@ -182,7 +166,7 @@ function resetGame() {
     }
 }
 
-export function killPlayer(player, timestamp) {
-    player.isAlive = false;
-    player.deadTime = timestamp;
+export function countPoint(player) {
+    playerWins[player.id]++;
+    playerScoreElement[player.id].innerText = playerWins[player.id];
 }
