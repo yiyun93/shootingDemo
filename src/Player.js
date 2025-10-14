@@ -9,6 +9,9 @@ export default class Player {
     Object.assign(this, config); // property 복사
     // respawn을 위한 config정보 저장
     this.defaultState = JSON.parse(JSON.stringify(config));
+
+    // 생성 시 즉시 무적 적용
+    this.setInvincible(performance.now());
   }
 
   move(keys, deltaTime, canvasWidth) {
@@ -175,18 +178,18 @@ export default class Player {
     const {
       keys,
       deltaTime,
-      canvas,
+      canvasWidth,
       otherPlayer,
       timestamp
     } = options;
 
     // 이동, 점프, 물리 처리 등
     this.judgeInvicible(timestamp);
-    this.move(keys, deltaTime, canvas.width);
+    this.move(keys, deltaTime, canvasWidth);
     if (otherPlayer) this.stomp(otherPlayer, timestamp);
     this.shoot(keys, timestamp);
     this.reload(timestamp);
-    this.updateBullets(otherPlayer, deltaTime, canvas.width, timestamp)
+    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp)
   }
 
   // 무적 판정일 때 플레이어 그리기
