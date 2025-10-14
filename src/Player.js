@@ -150,7 +150,15 @@ export default class Player {
   }
 
 
-  update(keys, deltaTime, canvas, otherPlayer, timestamp) {
+  update(options) {
+    const { 
+        keys, 
+        deltaTime, 
+        canvas, 
+        otherPlayer, 
+        timestamp 
+    } = options;
+
     // 이동, 점프, 물리 처리 등
     this.judgeInvicible(timestamp);
     this.move(keys, deltaTime, canvas.width);

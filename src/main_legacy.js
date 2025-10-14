@@ -1,46 +1,46 @@
 import { Player1Config, Player2Config } from './playerConfigs.js';
 import { maps } from './maps.js';
-import { keys } from './inputManager.js';
+import { keys, setupInput } from './inputManager.js';
 import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
 import Player from './Player.js';
-import { recreateCanvas } from './canvasManager.js';
+import { initializeCanvasManager, recreateCanvas } from './canvasManager.js';
 import { GAME_DURATION } from './constants.js';
 
-// 1. 상태 변수 (게임 매니저가 관리)
+
 let map;
 let platforms;
+
+const canvasWrapper = document.getElementById('canvas-wrapper');
+initializeCanvasManager(canvasWrapper);
 let gameCanvas;
 let gameCtx;
+
+const timerElement = document.getElementById('timerDisplay');
+const roundElement = document.getElementById('roundCounter');
 let round = 0;
 let roundStartTime;
-let isGameOver = false;
+
+let isGameOver; // 게임 상태를 추적하는 변수
 
 let players = [];
+//승리 횟수 변수
 let player1Wins = 0;
 let player2Wins = 0;
+const player1ScoreElement = document.getElementById('player1Score');
+const player2ScoreElement = document.getElementById('player2Score');
 
-let lastTime; // deltaTime 계산용
+// Delta Time 기법을 이용한 프레임 속도 보정
+let lastTime;
+
+// 키 입력 함수
+setupInput();
+
+// 게임 루프를 제어할 변수 선언
 let animationId = null;
 
-// 2. DOM 엘리먼트 (main.js에서 인수로 받거나 여기서 직접 가져올 수 있음)
-let timerElement;
-let roundElement;
-let player1ScoreElement;
-let player2ScoreElement;
+// 초기 게임 재시작
+resetGame();
 
-// 3. 게임 초기화 (외부에서 호출)
-export function initializeGameManager(domElements) {
-    // DOM 엘리먼트 할당
-    timerElement = domElements.timer;
-    roundElement = domElements.round;
-    player1ScoreElement = domElements.player1Score;
-    player2ScoreElement = domElements.player2Score;
-
-    // 초기 게임 시작
-    resetGame();
-}
-
-// 4. 게임 루프
 function gameLoop(timestamp) {
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
@@ -93,16 +93,7 @@ function gameLoop(timestamp) {
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-
-        const updateOptions = {
-            keys: keys,
-            deltaTime: deltaTime,
-            canvasWidth: gameCanvas.width, // 폭만 필요하므로 폭만 전달
-            otherPlayer: otherPlayer,
-            timestamp: timestamp
-        };
-
-        player.update(updateOptions)
+        player.update(keys, deltaTime, gameCanvas, otherPlayer, timestamp)
         player.draw(gameCtx);
     });
 
@@ -114,7 +105,7 @@ function gameLoop(timestamp) {
     if (activePlayers.length < 2 && !isGameOver) {
         isGameOver = true;
         console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
-
+        
         // 승리 횟수 추가 로직
         const winner = players.find(p => p.isAlive);
         if (winner) {
@@ -128,25 +119,26 @@ function gameLoop(timestamp) {
         }
     }
 
-    // Enter로 재시작 지원
-    if (isGameOver && keys['Enter']) {
-        resetGame();
+    animationId = requestAnimationFrame(gameLoop);
+
+    // Enter로도 재시작 지원
+    if (isGameOver && keys['Enter']) resetGame();
+}
+
+// 탭 가시성 변경 이벤트 리스너 추가
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        // 탭이 숨겨지면 게임 루프를 일시 중지
+        cancelAnimationFrame(animationId);
+    } else {
+        // 탭이 다시 보이면 게임 루프를 재개
+        // lastTime을 현재 시간으로 초기화하여 deltaTime 오차 방지
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(gameLoop);
     }
+});
 
-    animationId = requestAnimationFrame(gameLoop);
-}
-
-export function startLoop() {
-    lastTime = performance.now(); // visibilitychange에서 재개 시 deltaTime 오류 방지
-    animationId = requestAnimationFrame(gameLoop);
-}
-
-export function stopLoop() {
-    cancelAnimationFrame(animationId);
-}
-
-
-// 5. 게임/라운드 재시작
+// 게임 재시작
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
@@ -159,7 +151,7 @@ function resetGame() {
     gameCtx = ctx;
 
     gameCanvas.style.backgroundColor = map.background;
-
+    
     players = [
         new Player(Player1Config),
         new Player(Player2Config)
@@ -167,22 +159,12 @@ function resetGame() {
 
     // 게임 상태 초기화
     isGameOver = false;
-    roundStartTime = performance.now(); // 현재 시간을 roundStartTime으로 설정
-
-    // 모든 플레이어 무적 설정
+    lastTime = performance.now();
+    roundStartTime = lastTime;
     players.forEach(player => {
         player.isInvincible = true;
-        player.invincibilityStartTime = roundStartTime;
+        player.invincibilityStartTime = lastTime;
     });
-
-    // 루프가 이미 실행 중이 아니라면 시작
-    if (animationId === null) {
-        lastTime = performance.now();
-        animationId = requestAnimationFrame(gameLoop);
-    }
 }
 
-export function killPlayer(player, timestamp) {
-    player.isAlive = false;
-    player.deadTime = timestamp;
-}
+requestAnimationFrame(gameLoop);
