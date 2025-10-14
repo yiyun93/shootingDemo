@@ -150,8 +150,8 @@ export default class Player {
   }
 
   respawn(timestamp) {
-    if (this.isAlive) return false;
-    if (timestamp - this.deadTime < this.respawnDelay) return false;
+    if (this.isAlive) return;
+    if (timestamp - this.deadTime < this.respawnDelay) return;
 
     const cleanState = JSON.parse(JSON.stringify(this.defaultState));
     Object.assign(this, cleanState);
