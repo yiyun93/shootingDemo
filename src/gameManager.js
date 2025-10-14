@@ -16,7 +16,16 @@ let roundStartTime;
 let isGameOver = false;
 
 let players = [];
-let playerWins = [0, 0];
+const playerStats = {
+    0: {
+        wins: 0,
+        scoreElement: null
+    },
+    1: {
+        wins: 0,
+        scoreElement: null
+    }
+};
 
 let lastTime; // deltaTime 계산용
 let animationId = null;
@@ -24,15 +33,14 @@ let animationId = null;
 // 2. DOM 엘리먼트 (main.js에서 인수로 받거나 여기서 직접 가져올 수 있음)
 let timerElement;
 let roundElement;
-let playerScoreElements = {};
 
 // 3. 게임 초기화 (외부에서 호출)
 export function initializeGameManager(domElements) {
     // DOM 엘리먼트 할당
     timerElement = domElements.timer;
     roundElement = domElements.round;
-    playerScoreElements[0] = domElements.player1Score;
-    playerScoreElements[1] = domElements.player2Score;
+    playerStats[0].scoreElement = domElements.player1Score;
+    playerStats[1].scoreElement = domElements.player2Score;
 
     // 초기 게임 시작
     resetGame();
@@ -62,7 +70,7 @@ function gameLoop(timestamp) {
     // 라운드 종료 판정
     if (remainingTimeMs <= 0 && !isGameOver) {
         isGameOver = true;
-        console.log(`${round} 라운드 종료. red: ${playerWins[0]}, blue: ${playerWins[1]}`);
+        console.log(`${round} 라운드 종료. red: ${playerStats[0].wins}, blue: ${playerStats[1].wins}`);
     }
 
     // 게임오버 텍스트 표시
@@ -161,6 +169,6 @@ function resetGame() {
 }
 
 export function countPoint(player) {
-    playerWins[player.id]++;
-    playerScoreElements[player.id].innerText = playerWins[player.id];
+    playerStats[player.id].wins++;
+    playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
 }
