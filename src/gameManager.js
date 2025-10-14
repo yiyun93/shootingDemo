@@ -97,7 +97,7 @@ function gameLoop(timestamp) {
         const updateOptions = {
             keys: keys,
             deltaTime: deltaTime,
-            canvasWidth: gameCanvas.width, // 폭만 필요하므로 폭만 전달
+            canvas: gameCanvas,
             otherPlayer: otherPlayer,
             timestamp: timestamp
         };
