@@ -108,7 +108,7 @@ export default class Player {
       return; // 탄약이 가득 찼으면 장전 로직 종료
     }
 
-    // A. 자동 장전 시작 조건 (탄약이 0이거나, reloadDelay 동안 발사하지 않았을 때)
+    // A. 자동 장전 시작 조건 (탄약이 0인 상태로 reloadDelay의 반이 지났거나, reloadDelay 동안 발사하지 않았을 때)
     if (!this.reloading && (
       (this.currentAmmo === 0 && timestamp - this.lastShotTime >= this.reloadDelay / 2) ||
       timestamp - this.lastShotTime >= this.reloadDelay)) {
