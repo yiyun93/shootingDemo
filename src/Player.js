@@ -7,6 +7,8 @@ import { countPoint } from "./gameManager.js";
 export default class Player {
   constructor(config) {
     Object.assign(this, config); // property 복사
+    // respawn을 위한 config정보 저장
+    this.defaultState = JSON.parse(JSON.stringify(config));
   }
 
   move(keys, deltaTime, canvasWidth) {
@@ -77,7 +79,7 @@ export default class Player {
     }
   }
 
-  killPlayer(deadPlayer, timestamp, cause){
+  killPlayer(deadPlayer, timestamp, cause) {
     countPoint(this);
     deadPlayer.isAlive = false;
     deadPlayer.deadTime = timestamp;
@@ -143,17 +145,13 @@ export default class Player {
       return (bullet.x > 0 && bullet.x < canvasWidth);
     });
   }
+
   respawn(timestamp) {
     if (this.isAlive) return false;
     if (timestamp - this.deadTime < this.respawnDelay) return false;
 
-    this.isAlive = true;
-    this.health = this.maxHealth;
-    this.vx = 0;
-    this.vy = 0;
-    this.x = this.spawnX;
-    this.y = this.spawnY;
-    this.bullets = [];
+    const cleanState = JSON.parse(JSON.stringify(this.defaultState));
+    Object.assign(this, cleanState);
     this.setInvincible(timestamp);
   }
 
@@ -185,7 +183,7 @@ export default class Player {
     // 이동, 점프, 물리 처리 등
     this.judgeInvicible(timestamp);
     this.move(keys, deltaTime, canvas.width);
-    if (otherPlayer) this.stomp(otherPlayer);
+    if (otherPlayer) this.stomp(otherPlayer, timestamp);
     this.shoot(keys, timestamp);
     this.reload(timestamp);
     this.updateBullets(otherPlayer, deltaTime, canvas.width, timestamp)
