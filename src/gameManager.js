@@ -115,7 +115,7 @@ function gameLoop(timestamp) {
     if (activePlayers.length >= 2) {
         resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
     } // 사망자 리스폰
-    else {
+    else if(!isGameOver) {
         const dead = players.find(p => !p.isAlive);
         if(dead) dead.respawn(timestamp);
     }
@@ -169,6 +169,7 @@ function resetGame() {
 }
 
 export function countPoint(player) {
+    if(isGameOver) return;
     playerStats[player.id].wins++;
     playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
 }
