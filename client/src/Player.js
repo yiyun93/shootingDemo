@@ -132,7 +132,9 @@ export default class Player {
 
   updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp) {
     this.bullets = this.bullets.filter(bullet => {
-      bullet.update(deltaTime);
+      if(!bullet.update(deltaTime)){
+        return false;
+      }
 
       if (otherPlayer && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
@@ -172,6 +174,10 @@ export default class Player {
         this.isInvincible = false;
       }
     }
+  }
+
+  stepLava(){
+    return;
   }
 
 

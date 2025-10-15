@@ -95,7 +95,6 @@ function gameLoop(timestamp) {
     }
 
     const activePlayers = players.filter(p => p.isAlive);
-    handlePlatformCollision(activePlayers, platforms);
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
@@ -110,6 +109,9 @@ function gameLoop(timestamp) {
         player.update(updateOptions)
         player.draw(gameCtx);
     });
+
+    // 플랫폼 물리 적용
+    handlePlatformCollision(activePlayers, platforms);
 
     // 둘다 살아 있을 때 충돌 분리
     if (activePlayers.length >= 2) {
@@ -142,6 +144,7 @@ export function stopLoop() {
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
+    // map = maps[4];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
     roundElement.innerText = `${round} Round`;
@@ -173,3 +176,5 @@ export function countPoint(player) {
     playerStats[player.id].wins++;
     playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
 }
+
+export { platforms };

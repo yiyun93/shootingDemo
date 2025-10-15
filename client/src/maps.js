@@ -1,15 +1,15 @@
 const maps = [
     {
         id: 0,
-        name: "default",
+        name: "프롤로그",
         height: 600,
         width: 800,
         background: '#87b1dbff',
         platforms: [
-            { x: 0, y: 550, width: 800, height: 50, color: '#4CAF50' },
-            { x: 150, y: 400, width: 200, height: 20, color: '#795548' },
-            { x: 450, y: 300, width: 200, height: 20, color: '#795548' },
-            { x: 50, y: 200, width: 100, height: 20, color: '#795548' }
+            { x: 0, y: 550, width: 800, height: 50, color: '#4CAF50', type: 'wall' },
+            { x: 150, y: 400, width: 200, height: 20, color: '#795548', type: 'hover' },
+            { x: 450, y: 300, width: 200, height: 20, color: '#795548', type: 'hover' },
+            { x: 50, y: 200, width: 100, height: 20, color: '#795548', type: 'hover' }
         ]
     },
 
@@ -22,12 +22,12 @@ const maps = [
         background: '#2c3e50', // 짙은 밤색
         platforms: [
             // 바닥
-            { x: 0, y: 550, width: 800, height: 50, color: '#27ae60' },
+            { x: 0, y: 550, width: 800, height: 50, color: '#27ae60', type: 'wall' },
             // 낮은 플랫폼
-            { x: 100, y: 450, width: 150, height: 20, color: '#c0392b' },
-            { x: 550, y: 450, width: 150, height: 20, color: '#c0392b' },
+            { x: 100, y: 450, width: 150, height: 20, color: '#c0392b', type: 'hover' },
+            { x: 550, y: 450, width: 150, height: 20, color: '#c0392b', type: 'hover' },
             // 중앙 높은 플랫폼
-            { x: 300, y: 300, width: 200, height: 20, color: '#9b59b6' }
+            { x: 300, y: 300, width: 200, height: 20, color: '#9b59b6', type: 'hover' }
         ]
     },
 
@@ -42,15 +42,15 @@ const maps = [
         background: '#34495e', // 어두운 회색
         platforms: [
             // 바닥
-            { x: 0, y: 650, width: 1000, height: 50, color: '#7f8c8d' },
+            { x: 0, y: 650, width: 1000, height: 50, color: '#7f8c8d', type: 'wall' },
             // 2단 플랫폼 (좌/우)
-            { x: 50, y: 500, width: 200, height: 20, color: '#d35400' },
-            { x: 750, y: 500, width: 200, height: 20, color: '#d35400' },
+            { x: 50, y: 500, width: 200, height: 20, color: '#d35400', type: 'hover' },
+            { x: 750, y: 500, width: 200, height: 20, color: '#d35400', type: 'hover' },
             // 3단 플랫폼 (좌/우)
-            { x: 150, y: 350, width: 100, height: 20, color: '#2980b9' },
-            { x: 750, y: 350, width: 100, height: 20, color: '#2980b9' },
+            { x: 150, y: 350, width: 100, height: 20, color: '#2980b9', type: 'hover' },
+            { x: 750, y: 350, width: 100, height: 20, color: '#2980b9', type: 'hover' },
             // 중앙 고지대 (스나이핑 위치)
-            { x: 450, y: 200, width: 100, height: 20, color: '#e74c3c' }
+            { x: 450, y: 200, width: 100, height: 20, color: '#e74c3c', type: 'hover' }
         ]
     },
 
@@ -65,17 +65,17 @@ const maps = [
         background: '#1abc9c', // 밝은 청록색
         platforms: [
             // 바닥
-            { x: 0, y: 750, width: 600, height: 50, color: '#16a085' },
+            { x: 0, y: 750, width: 600, height: 50, color: '#16a085', type: 'wall' },
             // 좌측 벽 타기 플랫폼
-            { x: 0, y: 600, width: 150, height: 20, color: '#f39c12' },
-            { x: 0, y: 450, width: 150, height: 20, color: '#f39c12' },
+            { x: 0, y: 600, width: 150, height: 20, color: '#f39c12', type: 'hover' },
+            { x: 0, y: 450, width: 150, height: 20, color: '#f39c12', type: 'hover' },
             // 우측 벽 타기 플랫폼
-            { x: 450, y: 600, width: 150, height: 20, color: '#f39c12' },
-            { x: 450, y: 450, width: 150, height: 20, color: '#f39c12' },
+            { x: 450, y: 600, width: 150, height: 20, color: '#f39c12', type: 'hover' },
+            { x: 450, y: 450, width: 150, height: 20, color: '#f39c12', type: 'hover' },
             // 최상단 중앙 (핵심 점령지)
-            { x: 200, y: 150, width: 200, height: 20, color: '#e67e22' },
+            { x: 200, y: 150, width: 200, height: 20, color: '#e67e22', type: 'hover' },
             // 중앙 아래 연결 플랫폼
-            { x: 250, y: 300, width: 100, height: 20, color: '#d35400' }
+            { x: 250, y: 300, width: 100, height: 20, color: '#d35400', type: 'hover' }
         ]
     },
 
@@ -90,15 +90,15 @@ const maps = [
         background: '#7f8c8d', // 연한 회색 (석조 느낌)
         platforms: [
             // 바닥
-            { x: 0, y: 550, width: 800, height: 50, color: '#34495e' },
+            { x: 0, y: 550, width: 800, height: 50, color: '#34495e', type: 'wall' },
             // 요새 구조물 (두꺼운 벽)
-            { x: 100, y: 400, width: 600, height: 40, color: '#95a5a6' },
+            { x: 100, y: 400, width: 600, height: 40, color: '#95a5a6', type: 'wall' },
             // 요새 내부 진입 플랫폼 (좌)
-            { x: 0, y: 300, width: 150, height: 20, color: '#2c3e50' },
+            { x: 0, y: 300, width: 150, height: 20, color: '#2c3e50', type: 'hover' },
             // 요새 내부 진입 플랫폼 (우)
-            { x: 650, y: 300, width: 150, height: 20, color: '#2c3e50' },
+            { x: 650, y: 300, width: 150, height: 20, color: '#2c3e50', type: 'hover' },
             // 중앙 요새 최상단 (저격 포인트)
-            { x: 300, y: 200, width: 200, height: 20, color: '#e74c3c' }
+            { x: 300, y: 200, width: 200, height: 20, color: '#e74c3c', type: 'hover' }
         ]
     }
 ];
