@@ -1,0 +1,18 @@
+{
+  "name": "shootingdemo",
+  "version": "1.0.0",
+  "description": "web 2D platformer shooter with pure JS, HTML, CSS <br>\r Coded by using Gemini 2.5 flash, GPT-5",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js" 
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
