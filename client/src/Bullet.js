@@ -1,6 +1,5 @@
 import { BULLET_SPEED, BULLET_SIZE, BULLET_KNOCKBACK_POWER } from "./constants.js";
 import { isColliding } from "./physics.js";
-import { platforms } from "./gameManager.js";
 
 export default class Bullet {
     constructor(x, y, dir, owner) {
@@ -13,7 +12,7 @@ export default class Bullet {
         this.power = BULLET_KNOCKBACK_POWER;
     }
 
-    update(deltaTime) {
+    update(deltaTime, platforms) {
         this.x += this.dir * BULLET_SPEED * deltaTime;
         const isCollision = platforms.some(platform => {
             if (platform.type === 'wall' && isColliding(this, platform)) {

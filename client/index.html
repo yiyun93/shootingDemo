@@ -17,20 +17,85 @@
             overflow: hidden;
         }
 
+        /* Mode Selection Styles - Tailwind 대체 */
+        #mode-selection {
+            display: flex;
+            flex-direction: column; /* flex-col */
+            align-items: center; /* items-center */
+            padding: 2rem; /* p-8 */
+            background-color: #1f2937; /* bg-gray-800 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+            gap: 1.5rem; /* space-y-6 */
+            position: absolute;
+        }
+        #mode-selection h1 {
+            font-size: 2rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #facc15; /* text-yellow-400 */
+        }
+        #mode-selection .flex {
+            display: flex;
+            gap: 1rem; /* space-x-4 */
+        }
+        
+        /* Button Base Style */
+        #mode-selection button {
+            padding: 0.75rem 1.5rem; /* px-6 py-3 */
+            font-size: 1rem;
+            font-weight: 600; /* font-semibold */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
+            transition: all 150ms ease-in-out; /* transition duration-150 */
+        }
+        
+        /* Offline Button Specific */
+        #offline-btn {
+            background-color: #4f46e5; /* bg-indigo-600 */
+            color: white;
+        }
+        #offline-btn:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+            transform: scale(1.15); /* hover:scale-105 */
+        }
+
+        /* Online Button Specific */
+        #online-btn {
+            background-color: #10b981; /* bg-green-600 */
+            color: white;
+        }
+        #online-btn:hover {
+            background-color: #059669; /* hover:bg-green-700 */
+            transform: scale(1.15); /* hover:scale-105 */
+        }
+
+        #game-container { 
+            display: none; 
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        } /* 게임 시작 전 숨김 */
+
         canvas {
             background-color: #222;
             border: 2px solid #fff;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
-        #timerDisplay, #roundCounter {
-            color: white;
+        #timerDisplay,
+        #roundCounter {
             font-weight: bold;
             text-shadow: 2px 2px 4px #000000;
             margin: 0;
         }
 
-        #player1Score, #player2Score {
+        #player1Score,
+        #player2Score {
             font-size: 1.5em;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -41,15 +106,30 @@
 </head>
 
 <body>
-    <p id="roundCounter" style=" font-size: 1.5em;">Round 1</div>
-    <p id="timerDisplay" style=" font-size: 1.7em;">60</div>
-    <div style="display: flex; justify-content: space-around; width: 100%; max-width: 800px;">
-        <p id="player1Score"
-            style="color: red;">0</p>
-        <p id="player2Score"
-            style="color: blue;">0</p>
+    <!-- 모드 선택 화면 -->
+    <div id="mode-selection" class="flex flex-col items-center p-8 bg-gray-800 rounded-xl shadow-2xl space-y-6">
+        <h1 class="text-3xl font-bold text-yellow-400">게임 모드 선택</h1>
+        <div class="flex space-x-4">
+            <button id="offline-btn"
+                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition duration-150 transform hover:scale-105">
+                오프라인 플레이
+            </button>
+            <button id="online-btn"
+                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-150 transform hover:scale-105">
+                온라인 멀티플레이
+            </button>
+        </div>
     </div>
-    <div id="canvas-wrapper" style="margin-bottom: 5%;"></div>
+    <!-- 게임 UI (선택 후 표시) -->
+    <div id="game-container">
+        <p id="roundCounter" style=" font-size: 1.5em; color: gold">Round 1</p>
+        <p id="timerDisplay" style=" font-size: 1.7em; color: whitesmoke">60</p>
+        <div style="display: flex; justify-content: space-around; width: 100%; max-width: 800px;">
+            <p id="player1Score" style="color: red;">0</p>
+            <p id="player2Score" style="color: blue;">0</p>
+        </div>
+        <div id="canvas-wrapper" style="margin-bottom: 5%;"></div>
+    </div>
     <script type="module" src="./src/main.js"></script>
 </body>
 

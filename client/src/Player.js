@@ -1,7 +1,7 @@
 import Bullet from "./Bullet.js";
 import { GRAVITY, FRICTION } from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
-import { countPoint } from "./gameManager.js";
+import { countPoint } from "./offlineGameManager.js";
 
 
 export default class Player {
@@ -130,9 +130,9 @@ export default class Player {
     }
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx) {
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms) {
     this.bullets = this.bullets.filter(bullet => {
-      if(!bullet.update(deltaTime)){
+      if(!bullet.update(deltaTime, platforms)){
         return false;
       }
 

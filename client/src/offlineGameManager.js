@@ -1,46 +1,52 @@
 import { Player1Config, Player2Config } from './playerConfigs.js';
 import { maps } from './maps.js';
-import { keys, setupInput } from './inputManager.js';
+import { keys } from './inputManager.js';
 import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
 import Player from './Player.js';
-import { initializeCanvasManager, recreateCanvas } from './canvasManager.js';
+import { recreateCanvas } from './canvasManager.js';
 import { GAME_DURATION } from './constants.js';
 
-
+// 1. 상태 변수 (게임 매니저가 관리)
 let map;
 let platforms;
-
-const canvasWrapper = document.getElementById('canvas-wrapper');
-initializeCanvasManager(canvasWrapper);
 let gameCanvas;
 let gameCtx;
-
-const timerElement = document.getElementById('timerDisplay');
-const roundElement = document.getElementById('roundCounter');
 let round = 0;
 let roundStartTime;
-
-let isGameOver; // 게임 상태를 추적하는 변수
+let isGameOver = false;
 
 let players = [];
-//승리 횟수 변수
-let player1Wins = 0;
-let player2Wins = 0;
-const player1ScoreElement = document.getElementById('player1Score');
-const player2ScoreElement = document.getElementById('player2Score');
+const playerStats = {
+    0: {
+        wins: 0,
+        scoreElement: null
+    },
+    1: {
+        wins: 0,
+        scoreElement: null
+    }
+};
 
-// Delta Time 기법을 이용한 프레임 속도 보정
-let lastTime;
-
-// 키 입력 함수
-setupInput();
-
-// 게임 루프를 제어할 변수 선언
+let lastTime; // deltaTime 계산용
 let animationId = null;
 
-// 초기 게임 재시작
-resetGame();
+// 2. DOM 엘리먼트 (main.js에서 인수로 받거나 여기서 직접 가져올 수 있음)
+let timerElement;
+let roundElement;
 
+// 3. 게임 초기화 (외부에서 호출)
+export function initializeGameManager(domElements) {
+    // DOM 엘리먼트 할당
+    timerElement = domElements.timer;
+    roundElement = domElements.round;
+    playerStats[0].scoreElement = domElements.player1Score;
+    playerStats[1].scoreElement = domElements.player2Score;
+
+    // 초기 게임 시작
+    resetGame();
+}
+
+// 4. 게임 루프
 function gameLoop(timestamp) {
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
@@ -64,7 +70,7 @@ function gameLoop(timestamp) {
     // 라운드 종료 판정
     if (remainingTimeMs <= 0 && !isGameOver) {
         isGameOver = true;
-        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
+        console.log(`${round} 라운드 종료. red: ${playerStats[0].wins}, blue: ${playerStats[1].wins}`);
     }
 
     // 게임오버 텍스트 표시
@@ -89,56 +95,58 @@ function gameLoop(timestamp) {
     }
 
     const activePlayers = players.filter(p => p.isAlive);
-    handlePlatformCollision(activePlayers, platforms);
 
     activePlayers.forEach(player => {
         const otherPlayer = activePlayers.find(p => p.id !== player.id);
-        player.update(keys, deltaTime, gameCanvas, otherPlayer, timestamp)
+        const updateOptions = {
+            keys: keys,
+            deltaTime: deltaTime,
+            canvasWidth: gameCanvas.width,
+            otherPlayer: otherPlayer,
+            timestamp: timestamp
+        };
+
+        player.update(updateOptions)
         player.draw(gameCtx);
     });
+    
+    // 총알은 죽은 플레이어의 총알도 계속 진행
+    players.forEach(player => {
+        const otherPlayer = players.find(p => p.id !== player.id);
+        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
+    })
+
+    // 플랫폼 물리 적용
+    handlePlatformCollision(activePlayers, platforms, timestamp);
 
     // 둘다 살아 있을 때 충돌 분리
-    if (activePlayers.length >= 2)
+    if (activePlayers.length >= 2) {
         resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
+    } // 사망자 리스폰
+    else if(!isGameOver) {
+        const dead = players.find(p => !p.isAlive);
+        if(dead) dead.respawn(timestamp);
+    }
 
-
-    if (activePlayers.length < 2 && !isGameOver) {
-        isGameOver = true;
-        console.log(`${round} 라운드 종료. red: ${player1Wins}, blue: ${player2Wins}`);
-        
-        // 승리 횟수 추가 로직
-        const winner = players.find(p => p.isAlive);
-        if (winner) {
-            if (winner.id === 1) {
-                player1Wins++;
-                player1ScoreElement.innerText = player1Wins;
-            } else if (winner.id === 2) {
-                player2Wins++;
-                player2ScoreElement.innerText = player2Wins;
-            }
-        }
+    // Enter로 재시작 지원
+    if (isGameOver && keys['Enter']) {
+        resetGame();
     }
 
     animationId = requestAnimationFrame(gameLoop);
-
-    // Enter로도 재시작 지원
-    if (isGameOver && keys['Enter']) resetGame();
 }
 
-// 탭 가시성 변경 이벤트 리스너 추가
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-        // 탭이 숨겨지면 게임 루프를 일시 중지
-        cancelAnimationFrame(animationId);
-    } else {
-        // 탭이 다시 보이면 게임 루프를 재개
-        // lastTime을 현재 시간으로 초기화하여 deltaTime 오차 방지
-        lastTime = performance.now();
-        animationId = requestAnimationFrame(gameLoop);
-    }
-});
+export function startLoop() {
+    lastTime = performance.now(); // visibilitychange에서 재개 시 deltaTime 오류 방지
+    animationId = requestAnimationFrame(gameLoop);
+}
 
-// 게임 재시작
+export function stopLoop() {
+    cancelAnimationFrame(animationId);
+}
+
+
+// 5. 게임/라운드 재시작
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
@@ -151,20 +159,30 @@ function resetGame() {
     gameCtx = ctx;
 
     gameCanvas.style.backgroundColor = map.background;
-    
+
     players = [
         new Player(Player1Config),
         new Player(Player2Config)
     ];
 
+    // 리스폰 포인트 설정
+    for(let i = 0; i < players.length; i++){
+        players[i].setSpawnPoint( map.spawnPoints[i].x,  map.spawnPoints[i].y );
+    } 
+
     // 게임 상태 초기화
     isGameOver = false;
-    lastTime = performance.now();
-    roundStartTime = lastTime;
-    players.forEach(player => {
-        player.isInvincible = true;
-        player.invincibilityStartTime = lastTime;
-    });
+    roundStartTime = performance.now(); // 현재 시간을 roundStartTime으로 설정
+
+    // 루프가 이미 실행 중이 아니라면 시작
+    if (animationId === null) {
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(gameLoop);
+    }
 }
 
-requestAnimationFrame(gameLoop);
+export function countPoint(player) {
+    if(isGameOver) return;
+    playerStats[player.id].wins++;
+    playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
+}
