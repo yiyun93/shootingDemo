@@ -144,7 +144,7 @@ export function stopLoop() {
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
-    // map = maps[4];
+    map = maps[7];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
     roundElement.innerText = `${round} Round`;
@@ -159,6 +159,11 @@ function resetGame() {
         new Player(Player1Config),
         new Player(Player2Config)
     ];
+
+    // 리스폰 포인트 설정
+    for(let i = 0; i < players.length; i++){
+        players[i].setSpawnPoint( map.spawnPoints[i].x,  map.spawnPoints[i].y );
+    } 
 
     // 게임 상태 초기화
     isGameOver = false;

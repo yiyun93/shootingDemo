@@ -152,6 +152,13 @@ export default class Player {
     });
   }
 
+  setSpawnPoint(x, y){
+    this.x = x;
+    this.y = y;
+    this.defaultState.x = x;
+    this.defaultState.y = y;
+  }
+
   respawn(timestamp) {
     if (this.isAlive) return;
     if (timestamp - this.deadTime < this.respawnDelay) return;

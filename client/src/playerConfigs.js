@@ -18,8 +18,6 @@ const BasePlayerConfig = {
     id: 0,
     maxHealth: DEFAULT_PLAYER_HEALTH,
     health: DEFAULT_PLAYER_HEALTH,
-	spawnX: 50,
-	spawnY: 500,
     x: 0,
     y: 0,
     vx: 0,
@@ -71,10 +69,6 @@ export const Player1Config = {
     
     // 고유 설정
     id: 0,
-	spawnX: 50,
-	spawnY: 500,
-    x: 50,
-    y: 500,
     facing: 1,
     color: 'red',
     controls: {
@@ -92,9 +86,6 @@ export const Player2Config = {
     
     // 고유 설정
     id: 1,
-	spawnX: 720,
-	spawnY: 500,
-    x: 720,
     y: 500,
     facing: -1,
     color: 'blue',
