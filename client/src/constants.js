@@ -24,7 +24,7 @@ const DEFAULT_INVINC_DURATION = 2000; //ms
 
 
 //총알관련
-const BULLET_SPEED = 800;
+const BULLET_SPEED = 1000;
 const BULLET_SIZE = 5;
 const BULLET_KNOCKBACK_POWER = {x:400, y:-150};
 
