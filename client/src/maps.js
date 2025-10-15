@@ -258,7 +258,48 @@ const maps = [
             { x: 50, y: 600 },
             { x: 820, y: 600 } // 900 - 30 - 50 = 820
         ]
-    }
+    },
+
+    // --
+
+    // 맵 8: 사막의 좁은 길 (Desert Narrow Path) - 1200px 광폭, 좁은 플랫폼, 용암 바닥
+{
+    id: 8,
+    name: "사막의 좁은 길",
+    width: 1200,
+    height: 700,
+    background: '#b8860b', // 어두운 황금색 (사막 느낌)
+    platforms: [
+        // 1. 용암 바닥 (떨어지기 쉬움)
+        { x: 0, y: 650, width: 1200, height: 50, color: '#e74c3c', type: 'lava' }, 
+        
+        // 2. 시작 플랫폼 (이미지의 2층 높이)
+        // 좌측 (hover)
+        { x: 100, y: 500, width: 200, height: 30, color: '#6d4c41', type: 'hover' }, 
+        // 우측 (hover)
+        { x: 900, y: 500, width: 200, height: 30, color: '#6d4c41', type: 'hover' }, 
+        
+        // 4. 고지대 플랫폼
+        // 좌측 (hover)
+        { x: 200, y: 350, width: 150, height: 30, color: '#6d4c41', type: 'hover' }, 
+        // 우측 (hover)
+        { x: 850, y: 350, width: 150, height: 30, color: '#6d4c41', type: 'hover' }, 
+        
+        // 5. 중앙 (건너기용 좁은 플랫폼)
+        { x: 530, y: 380, width: 150, height: 20, color: '#f39c12', type: 'hover' },
+
+        // 3단 플랫폼 (이미지의 2층 높이)
+        // 좌측 (hover)
+        { x: 150, y: 170, width: 170, height: 30, color: '#6d4c41', type: 'hover' }, 
+        // 우측 (hover)
+        { x: 900, y: 170, width: 170, height: 30, color: '#6d4c41', type: 'hover' }, 
+    ],
+    // 스폰 지점: 시작 플랫폼(Y=500) 위에 배치 (500 - 50 = 450)
+    spawnPoints: [
+        { x: 100, y: 450 }, // 좌측
+        { x: 1070, y: 450 } // 우측 (1200 - 30(너비) - 100(여유) = 1070)
+    ]
+}
 ];
 
 export { maps };
