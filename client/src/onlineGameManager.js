@@ -1,80 +1,44 @@
-import { setupInput, keys } from './inputManager.js';
-import { initializeCanvasManager } from './canvasManager.js';
-// *GameManager는 이제 동적으로 로드됩니다.
+// main.js에 socket.io 클라이언트 추가
+const socket = io("YOUR_SERVER_URL");
 
-// 1. DOM 엘리먼트 정의
-const canvasWrapper = document.getElementById('canvas-wrapper');
-const timerElement = document.getElementById('timerDisplay');
-const roundElement = document.getElementById('roundCounter');
-const player1ScoreElement = document.getElementById('player1Score');
-const player2ScoreElement = document.getElementById('player2Score');
+let serverState = {}; // 서버로부터 받을 게임 상태 저장 변수
 
-const modeSelection = document.getElementById('mode-selection');
-const gameContainer = document.getElementById('game-container');
-const offlineBtn = document.getElementById('offline-btn');
-const onlineBtn = document.getElementById('online-btn');
-
-// DOM 엘리먼트 묶음
-const domElements = {
-    timer: timerElement,
-    round: roundElement,
-    player1Score: player1ScoreElement,
-    player2Score: player2ScoreElement
-};
-
-// 캔버스 초기화 (모드와 관계없이 필요)
-initializeCanvasManager(canvasWrapper);
-setupInput(); // 키 입력 초기화 (오프라인/온라인 모두 사용)
-
-let CurrentGameManager = null; // 현재 활성화된 게임 매니저 인스턴스
-
-// 2. 게임 모듈 실행 함수
-async function launchGame(mode) {
-    // 1. UI 전환: 모드 선택 화면 숨기고 게임 화면 표시
-    modeSelection.style.display = 'none';
-    gameContainer.style.display = 'flex'; 
-
-    // 2. 모듈 동적 로드
-    let GameManagerModule;
-    
-    if (mode === 'offline') {
-        // 오프라인 모듈 로드 (기존 싱글 플레이/로컬 멀티)
-        GameManagerModule = await import('./offlineGameManager.js');
-        console.log("오프라인 모드로 게임을 시작합니다.");
-    } else if (mode === 'online') {
-        // 온라인 모듈 로드 (Socket.io 통신 로직 포함)
-        GameManagerModule = await import('./onlineGameManager.js');
-        console.log("온라인 모드로 게임을 시작합니다.");
-    } else {
-        return;
-    }
-    
-    // 3. 로드된 모듈 초기화 및 시작
-    CurrentGameManager = GameManagerModule;
-    CurrentGameManager.initializeGameManager(domElements);
-    CurrentGameManager.startLoop();
-}
-
-
-// 3. 이벤트 리스너 설정
-offlineBtn.addEventListener('click', () => {
-    launchGame('offline');
+// 1. 서버로부터 게임 상태 수신
+socket.on('gameState', (state) => {
+    serverState = state;
 });
 
-onlineBtn.addEventListener('click', () => {
-    // 온라인 모드는 서버 주소가 필요할 수 있습니다.
-    // 여기서는 예시로 서버 주소를 직접 전달하거나, onlineGameManager 내부에서 처리하도록 합니다.
-    launchGame('online'); 
-});
+function gameLoop(timestamp) {
+    // 2. 매 프레임마다 현재 키 입력 상태를 서버로 전송
+    socket.emit('input', keys);
 
+    // ... 캔버스 초기화 ...
 
-// 탭 가시성 변경 이벤트 리스너 (GameManager의 stop/startLoop 함수를 사용)
-document.addEventListener('visibilitychange', () => {
-    if (CurrentGameManager) {
-        if (document.visibilityState === 'hidden') {
-            CurrentGameManager.stopLoop();
-        } else {
-            CurrentGameManager.startLoop();
+    // 3. 서버가 보내준 데이터로 모든 플레이어 그리기
+    if (serverState.players) {
+        for (const playerId in serverState.players) {
+            const serverPlayerData = serverState.players[playerId];
+
+            // 내 캐릭터인 경우: 예측과 보정 적용
+            if (playerId === socket.id) {
+                // 로컬 Player 객체가 자신의 입력을 기반으로 계속 움직임 (예측)
+                localPlayer.update({ keys, deltaTime, ... });
+
+                // 서버 위치와 예측 위치의 차이를 부드럽게 보정 (Reconciliation)
+                localPlayer.x = lerp(localPlayer.x, serverPlayerData.x, 0.1);
+                localPlayer.y = lerp(localPlayer.y, serverPlayerData.y, 0.1);
+
+                localPlayer.draw(gameCtx);
+            } else {
+                // 다른 플레이어는 서버가 보내준 위치에 그대로 그린다 (보간 추가하면 더 좋음)
+                drawOtherPlayer(serverPlayerData);
+            }
         }
     }
-});
+    requestAnimationFrame(gameLoop);
+}
+
+// 선형 보간(Linear Interpolation) 함수. 부드러운 움직임을 위해 추가
+function lerp(start, end, amt) {
+    return (1 - amt) * start + amt * end;
+}
