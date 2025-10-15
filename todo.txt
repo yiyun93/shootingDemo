@@ -1,1 +1,1 @@
-플랫폼 종류 설정 : hover, wall, lava, boing
+server 측 만들기

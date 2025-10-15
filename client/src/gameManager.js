@@ -150,7 +150,6 @@ export function stopLoop() {
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
-    map = maps[8];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
     roundElement.innerText = `${round} Round`;
