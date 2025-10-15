@@ -29,6 +29,7 @@ const BasePlayerConfig = {
     height: 50,
     facing: 1,
     color: 'red', // 색상은 Player1의 기본값으로 일단 설정
+    lastHit: null,
     
     // 총알 관련
     damage: DEFAUAT_DAMAGE,

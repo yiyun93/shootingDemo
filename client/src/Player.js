@@ -130,15 +130,16 @@ export default class Player {
     }
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp) {
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx) {
     this.bullets = this.bullets.filter(bullet => {
       if(!bullet.update(deltaTime)){
         return false;
       }
 
-      if (otherPlayer && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
+      if (otherPlayer.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
         otherPlayer.health -= this.damage;
+        otherPlayer.lastHit = this;
         applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
 
         if (otherPlayer.health <= 0) {
@@ -150,6 +151,8 @@ export default class Player {
       // canvas 나간 bullet 제거
       return (bullet.x > 0 && bullet.x < canvasWidth);
     });
+    // 탄환 그리기
+    this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
   setSpawnPoint(x, y){
@@ -183,10 +186,16 @@ export default class Player {
     }
   }
 
-  stepLava(){
-    return;
+  stepLava(timestamp){
+    if(this.lastHit){
+      this.lastHit.killPlayer(this, timestamp, 'threw');
+      return;
+    }
+    // this.lastHit가 없을 때
+    this.isAlive = false;
+    this.deadTime = timestamp;
+    console.log(`${this.color} player killed himself!`);
   }
-
 
   update(options) {
     const {
@@ -203,7 +212,6 @@ export default class Player {
     if (otherPlayer) this.stomp(otherPlayer, timestamp);
     this.shoot(keys, timestamp);
     this.reload(timestamp);
-    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp)
   }
 
   // 무적 판정일 때 플레이어 그리기
@@ -268,8 +276,5 @@ export default class Player {
     ctx.textAlign = 'center';
     ctx.fillText(this.currentAmmo, this.x + this.width / 2, this.y - this.height / 5);
     */
-
-    // 탄환
-    this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 }

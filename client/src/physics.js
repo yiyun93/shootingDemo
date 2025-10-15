@@ -26,7 +26,7 @@ function step(player, platform) {
 }
 
 // 플랫폼 충돌 처리
-export function handlePlatformCollision(players, platforms) {
+export function handlePlatformCollision(players, platforms, timestamp) {
     players.forEach(player => {
         // 충돌 전 위치 저장
         const prevX = player.x - player.vx;
@@ -78,7 +78,7 @@ export function handlePlatformCollision(players, platforms) {
 
                 // 3. lava (플레이어 충돌 시 사망)
                 case 'lava':
-                    player.stepLava();
+                    player.stepLava(timestamp);
                     // 사망했으므로 추가 충돌 처리는 불필요
                     break;
             }

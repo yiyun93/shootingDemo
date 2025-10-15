@@ -213,7 +213,7 @@ const maps = [
             { x: 1000, y: 550, width: 200, height: 50, color: '#7f8c8d', type: 'wall' },
             
             // 중앙 제단 (가장 중요한 wall)
-            { x: 400, y: 300, width: 400, height: 50, color: '#95a5a6', type: 'wall' },
+            { x: 400, y: 300, width: 400, height: 35, color: '#95a5a6', type: 'wall' },
             
             // 중앙 제단으로 가는 호버 점프대 (좌/우)
             { x: 300, y: 450, width: 100, height: 20, color: '#f39c12', type: 'hover' },

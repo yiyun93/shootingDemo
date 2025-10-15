@@ -109,9 +109,15 @@ function gameLoop(timestamp) {
         player.update(updateOptions)
         player.draw(gameCtx);
     });
+    
+    // 총알은 죽은 플레이어의 총알도 계속 진행
+    players.forEach(player => {
+        const otherPlayer = players.find(p => p.id !== player.id);
+        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx);
+    })
 
     // 플랫폼 물리 적용
-    handlePlatformCollision(activePlayers, platforms);
+    handlePlatformCollision(activePlayers, platforms, timestamp);
 
     // 둘다 살아 있을 때 충돌 분리
     if (activePlayers.length >= 2) {
@@ -144,7 +150,7 @@ export function stopLoop() {
 function resetGame() {
     round++;
     map = maps[Math.floor(Math.random() * maps.length)];
-    map = maps[7];
+    map = maps[6];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
     roundElement.innerText = `${round} Round`;
