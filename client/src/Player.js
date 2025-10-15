@@ -24,8 +24,9 @@ export default class Player {
       this.vx += this.accel * deltaTime;
       this.facing = 1;
     }
-    else { // 양쪽 키 동시 입력 또는 키를 놓았을 때
-      this.vx *= (1 - FRICTION * deltaTime);
+    else { // 양쪽 키 동시 입력 또는 키를 놓았을 때 + 또는 이미 플레이어속도를 초과했을 때
+      if(this.onGround) this.vx *= (1 - FRICTION * deltaTime);
+      else this.vx *= (1 - (FRICTION * deltaTime)/3) // 공중에 있을 땐 마찰력 1/3만 적용
       // 떨림 방지
       if (Math.abs(this.vx) < 0.1) {
         this.vx = 0;
@@ -136,7 +137,7 @@ export default class Player {
       if (otherPlayer && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
         otherPlayer.health -= this.damage;
-        applyKnockback(otherPlayer, bullet.dir * bullet.power, 0);
+        applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
 
         if (otherPlayer.health <= 0) {
           this.killPlayer(otherPlayer, timestamp, 'hit')

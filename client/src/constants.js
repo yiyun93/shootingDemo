@@ -2,11 +2,11 @@
 
 // 환경관련
 const GRAVITY = 1800;
-const FRICTION = 9; // 5~30
+const FRICTION = 7; // 5~30
 const GAME_DURATION = 60000; // ms
 
 //플레이어 관련
-const DEFAULT_PLAYER_HEALTH = 30;
+const DEFAULT_PLAYER_HEALTH = 50;
 const DEFAULT_PLAYER_SPEED = 400;
 const DEFAULT_PLAYER_ACCEL = 3000;
 
@@ -26,7 +26,7 @@ const DEFAULT_INVINC_DURATION = 2000; //ms
 //총알관련
 const BULLET_SPEED = 800;
 const BULLET_SIZE = 5;
-const BULLET_KNOCKBACK_POWER = 300;
+const BULLET_KNOCKBACK_POWER = {x:400, y:-150};
 
 export {
     GRAVITY, FRICTION, GAME_DURATION,
