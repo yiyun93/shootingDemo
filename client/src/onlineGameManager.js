@@ -1,7 +1,7 @@
 //import { io } from 'socket.io-client';
 import { keys } from './inputManager.js';
 import { recreateCanvas } from './canvasManager.js';
-import Player from './Player.js';
+import Player from '/shared/Player.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -48,7 +48,7 @@ function updateOtherPlayersState(players){
         const newPlayerData = player;
         const newState = { x: newPlayerData.x, y: newPlayerData.y, timestamp: now };
 
-        if (otherPlayersState.has(player.id)) {
+        if (player.id in otherPlayersState) {
             const state = otherPlayersState[player.id];
             state.prev = state.current;
             state.current = newState;

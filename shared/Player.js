@@ -1,8 +1,6 @@
 import Bullet from "./Bullet.js";
 import { GRAVITY, FRICTION } from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
-import { countPoint } from "./offlineGameManager.js";
-
 
 export default class Player {
   constructor(config) {
@@ -84,10 +82,12 @@ export default class Player {
   }
 
   killPlayer(deadPlayer, timestamp, cause) {
-    countPoint(this);
     deadPlayer.isAlive = false;
     deadPlayer.deadTime = timestamp;
-    console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`)
+    console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`);
+    if(this.id != deadPlayer.id){
+      this.killLog.push(deadPlayer);
+    }
   }
 
   shoot(keys, timestamp) {
@@ -143,7 +143,7 @@ export default class Player {
         applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
 
         if (otherPlayer.health <= 0) {
-          this.killPlayer(otherPlayer, timestamp, 'hit')
+          this.killPlayer(otherPlayer, timestamp, 'hit');
         }
         return false;
       }
@@ -189,12 +189,12 @@ export default class Player {
   stepLava(timestamp){
     if(this.lastHit){
       this.lastHit.killPlayer(this, timestamp, 'threw');
-      return;
     }
-    // this.lastHit가 없을 때
-    this.isAlive = false;
-    this.deadTime = timestamp;
-    console.log(`${this.color} player killed himself!`);
+    this.killPlayer(this, timestamp, 'killed');
+  }
+
+  clearKillLog(){
+    this.killLog = [];
   }
 
   update(options) {
@@ -209,7 +209,9 @@ export default class Player {
     // 이동, 점프, 물리 처리 등
     this.judgeInvicible(timestamp);
     this.move(keys, deltaTime, canvasWidth);
-    if (otherPlayer) this.stomp(otherPlayer, timestamp);
+    if (otherPlayer){
+      this.stomp(otherPlayer, timestamp);
+    }
     this.shoot(keys, timestamp);
     this.reload(timestamp);
   }

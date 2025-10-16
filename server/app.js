@@ -28,6 +28,9 @@ const io = new Server(httpServer, {
 // 클라이언트 폴더를 정적 파일로 제공하여, 브라우저가 HTML/JS/CSS에 접근 가능하게 함
 app.use(express.static(path.join(__dirname, '../client')));
 
+// shared 폴더를 '/shared' 경로로 서빙합니다.
+app.use('/shared', express.static(path.join(__dirname, '../shared')));
+
 // 루트 경로 ('/')로 접속 시 index.html 파일 제공
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'));

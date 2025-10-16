@@ -55,6 +55,7 @@ const BasePlayerConfig = {
         down: 's',
         shoot: ' '
     },
+    killLog: [],
     
     // 무적 관련
     isAlive: true,

@@ -1,10 +1,10 @@
-import { Player1Config, Player2Config } from './playerConfigs.js';
-import { maps } from './maps.js';
+import { Player1Config, Player2Config } from '/shared/playerConfigs.js';
+import { maps } from '/shared/maps.js';
 import { keys } from './inputManager.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from './physics.js';
-import Player from './Player.js';
+import { handlePlatformCollision, resolvePlayerOverlap } from '/shared/physics.js';
+import Player from '/shared/Player.js';
 import { recreateCanvas } from './canvasManager.js';
-import { GAME_DURATION } from './constants.js';
+import { GAME_DURATION } from '/shared/constants.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map;
@@ -106,7 +106,7 @@ function gameLoop(timestamp) {
             timestamp: timestamp
         };
 
-        player.update(updateOptions)
+        player.update(updateOptions);
         player.draw(gameCtx);
     });
     
@@ -114,7 +114,7 @@ function gameLoop(timestamp) {
     players.forEach(player => {
         const otherPlayer = players.find(p => p.id !== player.id);
         player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
-    })
+    });
 
     // 플랫폼 물리 적용
     handlePlatformCollision(activePlayers, platforms, timestamp);
@@ -127,6 +127,12 @@ function gameLoop(timestamp) {
         const dead = players.find(p => !p.isAlive);
         if(dead) dead.respawn(timestamp);
     }
+
+    // 플레이어 점수 카운트
+    players.forEach(player => {
+        for(const deadPlayer of player.killLog) countPoint(player);
+        player.clearKillLog();
+    });
 
     // Enter로 재시작 지원
     if (isGameOver && keys['Enter']) {
@@ -181,7 +187,7 @@ function resetGame() {
     }
 }
 
-export function countPoint(player) {
+function countPoint(player) {
     if(isGameOver) return;
     playerStats[player.id].wins++;
     playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
