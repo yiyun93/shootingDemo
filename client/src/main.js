@@ -1,4 +1,4 @@
-import { setupInput, keys } from './inputManager.js';
+import { setupInput } from './inputManager.js';
 import { initializeCanvasManager } from './canvasManager.js';
 
 // DOM 엘리먼트 정의
@@ -35,12 +35,10 @@ async function launchGame(mode) {
     if (mode === 'offline') {
         // 오프라인 모듈 로드 (기존 싱글 플레이/로컬 멀티)
         GameManagerModule = await import('./offlineGameManager.js');
-        currentGameMode = 'offline';
         console.log("오프라인 모드로 게임을 시작합니다.");
     } else if (mode === 'online') {
         // 온라인 모듈 로드 (Socket.io 통신 로직 포함)
         GameManagerModule = await import('./onlineGameManager.js');
-        currentGameMode = 'online';
         console.log("온라인 모드로 게임을 시작합니다.");
     } else {
         return;
@@ -58,17 +56,20 @@ async function launchGame(mode) {
 
 // 3. 이벤트 리스너 설정
 offlineBtn.addEventListener('click', () => {
-    launchGame('offline');
+    currentGameMode = 'offline';
+    launchGame(currentGameMode);
 });
 
 onlineBtn.addEventListener('click', () => {
     // 온라인 모드는 서버 주소가 필요할 수 있습니다.
     // 여기서는 예시로 서버 주소를 직접 전달하거나, onlineGameManager 내부에서 처리하도록 합니다.
-    launchGame('online');
+    currentGameMode = 'online';
+    launchGame(currentGameMode);
 });
 
 // 탭 가시성 변경 이벤트 리스너 (GameManager의 stop/startLoop 함수를 사용)
 document.addEventListener('visibilitychange', () => {
+    // 오프라인일 때만 백그라운드 시 일시정지
     if (currentGameMode !== 'offline' || !CurrentGameManager) {
         return;
     }

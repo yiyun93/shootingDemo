@@ -152,7 +152,7 @@ function resetGame() {
     map = maps[Math.floor(Math.random() * maps.length)];
     platforms = map.platforms;
     console.log(`${round} 라운드 : ${map.name} `);
-    roundElement.innerText = `${round} Round`;
+    roundElement.innerText = `Round ${round}`;
 
     const { canvas, ctx } = recreateCanvas(map);
     gameCanvas = canvas;
