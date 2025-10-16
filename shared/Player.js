@@ -136,7 +136,7 @@ export default class Player {
         return false;
       }
 
-      if (otherPlayer.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
+      if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
         otherPlayer.health -= this.damage;
         otherPlayer.lastHit = this;
@@ -203,7 +203,8 @@ export default class Player {
       deltaTime,
       canvasWidth,
       otherPlayer,
-      timestamp
+      timestamp,
+      mode = 'offline'
     } = options;
 
     // 이동, 점프, 물리 처리 등

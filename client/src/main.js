@@ -1,5 +1,6 @@
 import { setupInput } from './inputManager.js';
 import { initializeCanvasManager } from './canvasManager.js';
+import { mode, setMode } from './modeManager.js';
 
 // DOM 엘리먼트 정의
 const canvasWrapper = document.getElementById('canvas-wrapper');
@@ -20,11 +21,11 @@ initializeCanvasManager(canvasWrapper);
 // 키 입력 함수 초기화
 setupInput();
 
-let currentGameMode;
 let CurrentGameManager = null; // 현재 활성화된 게임 매니저 인스턴스
 
 // 2. 게임 모듈 실행 함수
 async function launchGame(mode) {
+    setMode(mode);
     // 1. UI 전환: 모드 선택 화면 숨기고 게임 화면 표시
     modeSelection.style.display = 'none';
     gameContainer.style.display = 'flex';
@@ -56,21 +57,17 @@ async function launchGame(mode) {
 
 // 3. 이벤트 리스너 설정
 offlineBtn.addEventListener('click', () => {
-    currentGameMode = 'offline';
-    launchGame(currentGameMode);
+    launchGame('offline');
 });
 
 onlineBtn.addEventListener('click', () => {
-    // 온라인 모드는 서버 주소가 필요할 수 있습니다.
-    // 여기서는 예시로 서버 주소를 직접 전달하거나, onlineGameManager 내부에서 처리하도록 합니다.
-    currentGameMode = 'online';
-    launchGame(currentGameMode);
+    launchGame('online');
 });
 
 // 탭 가시성 변경 이벤트 리스너 (GameManager의 stop/startLoop 함수를 사용)
 document.addEventListener('visibilitychange', () => {
     // 오프라인일 때만 백그라운드 시 일시정지
-    if (currentGameMode !== 'offline' || !CurrentGameManager) {
+    if (mode !== 'offline' || !CurrentGameManager) {
         return;
     }
 
