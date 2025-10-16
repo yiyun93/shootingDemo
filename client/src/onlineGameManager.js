@@ -1,7 +1,7 @@
-//import { io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { keys } from './inputManager.js';
 import { recreateCanvas } from './canvasManager.js';
-import Player from '/shared/Player.js';
+import Player from '@shared/Player.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;

@@ -11,7 +11,7 @@ const { Server } = require('socket.io');
 // 2. 서버 설정
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const TICK_RATE = 60; // 60Hz (서버 틱 속도)
 
 // 3. Socket.io 서버 초기화 (WebSocket 통신 처리)
@@ -24,16 +24,17 @@ const io = new Server(httpServer, {
     pingTimeout: 5000     // 5초 내 응답 없으면 연결 종료
 });
 
+// ... 서버 시작 ...
 // 4. Express 웹 서버 설정 (정적 파일 제공)
 // 클라이언트 폴더를 정적 파일로 제공하여, 브라우저가 HTML/JS/CSS에 접근 가능하게 함
-app.use(express.static(path.join(__dirname, '../client')));
+const BUILD_PATH = path.join(__dirname, '../dist'); // project-root/dist를 가리킵니다.
 
-// shared 폴더를 '/shared' 경로로 서빙합니다.
-app.use('/shared', express.static(path.join(__dirname, '../shared')));
+// 빌드 결과물 (index.html, 번들 JS/CSS)을 루트 경로 ('/')에서 서빙합니다.
+app.use(express.static(BUILD_PATH)); 
 
-// 루트 경로 ('/')로 접속 시 index.html 파일 제공
+// 루트 경로 ('/')로 접속 시 dist 폴더 내의 index.html 파일 제공
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/index.html'));
+    res.sendFile(path.join(BUILD_PATH, 'index.html'));
 });
 
 

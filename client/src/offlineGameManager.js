@@ -1,10 +1,10 @@
-import { Player1Config, Player2Config } from '/shared/playerConfigs.js';
-import { maps } from '/shared/maps.js';
+import { Player1Config, Player2Config } from '@shared/playerConfigs.js';
+import { maps } from '@shared/maps.js';
 import { keys } from './inputManager.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from '/shared/physics.js';
-import Player from '/shared/Player.js';
+import { handlePlatformCollision, resolvePlayerOverlap } from '@shared/physics.js';
+import Player from '@shared/Player.js';
 import { recreateCanvas } from './canvasManager.js';
-import { GAME_DURATION } from '/shared/constants.js';
+import { GAME_DURATION } from '@shared/constants.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map;
