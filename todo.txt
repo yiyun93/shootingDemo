@@ -1,3 +1,4 @@
-client 번들링으로 전환 (socket.io 임포트 방식 수정)
+client 번들링으로 전환 (socket.io 임포트 방식 수정) V
+shared 폴더 생성 V
+
 client와 server측에서 다른 timestamp를 사용하는 문제 해결(online draw메소드 등 수정)
-shared 폴더 생성
