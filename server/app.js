@@ -11,7 +11,7 @@ const { Server } = require('socket.io');
 // 2. 서버 설정
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const TICK_RATE = 60; // 60Hz (서버 틱 속도)
 
 // 3. Socket.io 서버 초기화 (WebSocket 통신 처리)
@@ -142,7 +142,13 @@ function getGameState(serverPlayers) {
     const state = {};
     for(const id in serverPlayers) {
         const p = serverPlayers[id];
-        state[id] = { id: p.id, x: p.x, y: p.y, health: p.health, color: p.color };
+        state[id] = { 
+            id: p.id, 
+            x: Math.round(p.x * 100) / 100, // 소수점 2자리로 반올림하여 전송 (데이터 크기 최적화)
+            y: Math.round(p.y * 100) / 100, 
+            health: p.health, 
+            color: p.color 
+        };
     }
     return state;
 }

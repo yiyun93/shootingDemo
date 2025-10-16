@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client'; // NPM 패키지에서 io 함수를 import
+//import { io } from 'socket.io-client';
 import { keys } from './inputManager.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from './Player.js';
@@ -28,10 +28,85 @@ let timerElement;
 let roundElement;
 
 let socket = null;
-let serverState = { players: {}, platforms: null }; // 서버로부터 수신한 게임 상태
+let serverState = { players: {}, map: null }; // 서버로부터 수신한 게임 상태
 let lastTime; // deltaTime 계산용
 let animationId = null;
 let localPlayer = null; // 클라이언트 예측을 위한 로컬 Player 객체 (Player.js 인스턴스)
+
+
+// 다른 플레이어 보간을 위한 상태 저장 객체: { id: { prev: {x,y,t}, current: {x,y,t} } }
+let otherPlayersState = {};
+// 렌더링을 지연시킬 시간 (밀리초). 서버 틱 주기보다 커야 합니다.
+const INTERP_DELAY_MS = 100; // 100ms 뒤의 상태를 렌더링하도록 지연
+
+// 틱마다 서버에서 state를 받아 시행하는 다른 플레이어들 보간 함수
+function updateOtherPlayersState(players){
+    const now = performance.now();
+    players.forEach(player => {
+        if(player.id === socket.id) return;
+
+        const newPlayerData = player;
+        const newState = { x: newPlayerData.x, y: newPlayerData.y, timestamp: now };
+
+        if (otherPlayersState.has(player.id)) {
+            const state = otherPlayersState[player.id];
+            state.prev = state.current;
+            state.current = newState;
+        } else {
+            // 처음 접속한 경우, prev와 current를 동일하게 설정합니다.
+            otherPlayersState[player.id] = {
+                prev: newState, 
+                current: newState 
+            };
+        }
+    });
+}
+
+// -------------------------------------------------------------
+// **[핵심]** 타임스탬프 기반 선형 보간 함수
+// -------------------------------------------------------------
+function interpolatePlayer(player) {
+    const state = otherPlayersState[player.id];
+    if (!state || !state.prev || !state.current) return;
+
+    // 1. 현재 렌더링되어야 할 시점(Target Time) 계산
+    // 현재 클라이언트 시간에서 지연 시간(INTERP_DELAY_MS)만큼 과거의 시간을 구합니다.
+    const renderTime = performance.now() - INTERP_DELAY_MS;
+
+    const prevTime = state.prev.timestamp;
+    const currTime = state.current.timestamp;
+    
+    // 이전 상태와 현재 상태의 시간 차이
+    const timeDifference = currTime - prevTime;
+
+    // 2. 보간 비율 (Amount) 계산
+    let amount = 0;
+    if (timeDifference > 0) {
+        // 렌더링 시점과 이전 상태 시간 사이의 경과 시간을 계산
+        const elapsedTime = renderTime - prevTime;
+        // 보간 비율 (0.0 ~ 1.0)
+        amount = elapsedTime / timeDifference;
+        
+        // 비율이 1.0을 넘으면 (이미 다음 틱 정보가 와야 할 시점) 그냥 다음 틱 위치로 고정합니다.
+        // 클램프(Clamp)를 사용하여 비율을 [0, 1] 사이로 제한합니다.
+        amount = Math.max(0, Math.min(1, amount));
+    }
+
+    // 3. 보간된 위치 계산
+    const interpolatedX = lerp(state.prev.x, state.current.x, amount);
+    const interpolatedY = lerp(state.prev.y, state.current.y, amount);
+
+    // 4. Player 객체의 Draw 함수를 사용하여 렌더링
+    // 이 시점에서 서버 데이터(health, color 등)와 보간된 위치를 합쳐서 그립니다.
+    // (실제 구현 시 Player 클래스 인스턴스를 활용하는 것이 더 좋습니다.)
+    const otherPlayer = new Player({
+        ...player, // 서버의 최신 정보 (체력, 색상 등)
+        x: interpolatedX, 
+        y: interpolatedY
+    });
+    otherPlayer.draw(gameCtx); // 서버의 timestamp로 인한 몇가지 렌더링 차이 발생 ex) invincible
+}
+
 
 export function initializeGameManager(domElements) {
     // DOM 엘리먼트 할당
@@ -49,7 +124,7 @@ export function initializeGameManager(domElements) {
 
     // 1. 연결 성공
     socket.on('connect', () => {
-        console.log(`[Online] Socket connected: ${socket.id}`);
+        console.log(`[Online] 접속됨 플레이어ID: ${socket.id}`);
         // 플레이어 접속 정보 전송
         socket.emit('playerJoin', { name: 'Player' + socket.id.substring(0, 4) });
     });
@@ -63,10 +138,8 @@ export function initializeGameManager(domElements) {
     // 3. 게임 상태 수신 (Tick 마다)
     socket.on('gameState', (state) => {
         serverState = state;
-        // 서버로부터 받은 내 플레이어 데이터가 있으면 예측 보정 수행
-        if (serverState.players && serverState.players[socket.id]) {
-            reconcilePlayer(serverState.players[socket.id]);
-        }
+        // 틱마다 다른 플레이어들 타임스탬프 기반 보간 시행
+        updateOtherPlayersState(state.players);
     });
 
     // 4. 연결 끊김
@@ -113,7 +186,7 @@ function gameLoop(timestamp) {
                 localPlayer.draw(gameCtx);
             } else {
                 // 다른 플레이어는 서버가 보내준 위치에 그대로 그린다 (보간 추가하면 더 좋음)
-                drawOtherPlayer(serverPlayerData);
+                interpolatePlayer(serverPlayerData);
             }
         }
     }
@@ -155,7 +228,7 @@ function lerp(start, end, amt) {
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
 function reconcilePlayer(serverData) {
-    const INTERP_AMOUNT = 0.15;
+    const INTERP_AMOUNT = 0.15; // 핑이 낮으면 더 높게, 핑이 높으면 더 낮게
     if (localPlayer) {
         // [핵심: 보정(Reconciliation)] 서버 위치와 예측 위치 사이의 차이를 보간합니다.
 
