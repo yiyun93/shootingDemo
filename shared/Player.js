@@ -1,5 +1,8 @@
 import Bullet from "./Bullet.js";
-import { GRAVITY, FRICTION } from "./constants.js";
+import {
+  GRAVITY, FRICTION,
+  COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION,
+} from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
 
 export default class Player {
@@ -23,8 +26,8 @@ export default class Player {
       this.facing = 1;
     }
     else { // 양쪽 키 동시 입력 또는 키를 놓았을 때 + 또는 이미 플레이어속도를 초과했을 때
-      if(this.onGround) this.vx *= (1 - FRICTION * deltaTime);
-      else this.vx *= (1 - (FRICTION * deltaTime)/3) // 공중에 있을 땐 마찰력 1/3만 적용
+      if (this.onGround) this.vx *= (1 - FRICTION * deltaTime);
+      else this.vx *= (1 - (FRICTION * deltaTime) / 3) // 공중에 있을 땐 마찰력 1/3만 적용
       // 떨림 방지
       if (Math.abs(this.vx) < 0.1) {
         this.vx = 0;
@@ -45,21 +48,57 @@ export default class Player {
 
 
     // ------------------------ y축 움직임 ------------------------
-    // 지상 점프 (onGround 조건으로 점프를 허용)
-    if (keys[this.controls.jump] && this.onGround) {
-      // console.log(`${this.color} player jumped on the ground`);
-      this.vy = this.jumpStrength;
-      this.onGround = false;
-      keys[this.controls.jump] = false;
-    }
-    // 공중 점프 (jumpsLeft 조건으로 점프를 허용)
-    else if (keys[this.controls.jump] && this.jumpsLeft > 0) {
-      this.jumpsLeft--;
-      // console.log(`${this.color} player jumped on the air`);
-      this.vy = this.jumpStrength;
-      keys[this.controls.jump] = false;
+
+    // ---- 코요테/버퍼 카운터 업데이트 ----
+    if (this.onGround) {
+      // 지면에 닿아 있을 때: 코요테 카운터를 최대값으로 리셋
+      this.coyoteTimeCounter = COYOTE_TIME_DURATION;
+    } else {
+      // 공중에 있을 때: 코요테, 버퍼 카운터 감소
+      if (this.coyoteTimeCounter > 0) {
+        this.coyoteTimeCounter -= deltaTime;
+      }
+      if (this.jumpBufferCounter > 0) {
+        this.jumpBufferCounter -= deltaTime;
+      }
     }
 
+    // 점프 입력 확인시 점프 버퍼 갱신
+    if (keys[this.controls.jump]) {
+      this.jumpBufferCounter = JUMP_BUFFER_DURATION;
+    }
+
+    // 점프 버퍼가 있으면 점프처리 지상에 있는 경우 위 코드에서 점프 버퍼를 갱신 후 즉시 시행됨
+    if (this.jumpBufferCounter > 0) {
+      // A. 지상 점프 또는 코요테 타임 점프 허용
+      if (this.onGround || this.coyoteTimeCounter > 0) {
+        // console.log(`${this.color} player jumped (Ground or Coyote Time)`);
+        this.vy = this.jumpStrength;
+        this.onGround = false;
+
+        // 점프 성공시 코요테/버퍼 타임 소진
+        this.coyoteTimeCounter = 0;
+        this.jumpBufferCounter = 0;
+
+        // 다음 프레임에서 점프가 다시 실행되는 것을 막기 위해 키 입력을 소비합니다.
+        keys[this.controls.jump] = false;
+      }
+
+      // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
+      // `else if`를 사용하여 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
+      else if (this.jumpsLeft > 0 && this.vy >= this.jumpStrength) {
+        this.jumpsLeft--;
+        // console.log(`${this.color} player jumped on the air`);
+        this.vy = this.jumpStrength;
+
+        this.jumpBufferCounter = 0; // 점프 버퍼 초기화
+
+        // 다음 프레임에서 점프가 다시 실행되는 것을 막기 위해 키 입력을 소비합니다.
+        keys[this.controls.jump] = false;
+      }
+    }
+
+    // 중력 적용
     this.vy += GRAVITY * deltaTime;
     this.y += this.vy * deltaTime;
 
@@ -85,7 +124,7 @@ export default class Player {
     deadPlayer.isAlive = false;
     deadPlayer.deadTime = timestamp;
     console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`);
-    if(this.id != deadPlayer.id){
+    if (this.id != deadPlayer.id) {
       this.killLog.push(deadPlayer);
     }
   }
@@ -132,7 +171,7 @@ export default class Player {
 
   updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms) {
     this.bullets = this.bullets.filter(bullet => {
-      if(!bullet.update(deltaTime, platforms)){
+      if (!bullet.update(deltaTime, platforms)) {
         return false;
       }
 
@@ -155,7 +194,7 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
-  setSpawnPoint(x, y){
+  setSpawnPoint(x, y) {
     this.x = x;
     this.y = y;
     this.defaultState.x = x;
@@ -186,14 +225,14 @@ export default class Player {
     }
   }
 
-  stepLava(timestamp){
-    if(this.lastHit){
+  stepLava(timestamp) {
+    if (this.lastHit) {
       this.lastHit.killPlayer(this, timestamp, 'threw');
     }
     this.killPlayer(this, timestamp, 'killed');
   }
 
-  clearKillLog(){
+  clearKillLog() {
     this.killLog = [];
   }
 
@@ -210,7 +249,7 @@ export default class Player {
     // 이동, 점프, 물리 처리 등
     this.judgeInvicible(timestamp);
     this.move(keys, deltaTime, canvasWidth);
-    if (otherPlayer){
+    if (otherPlayer) {
       this.stomp(otherPlayer, timestamp);
     }
     this.shoot(keys, timestamp);

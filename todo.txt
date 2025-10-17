@@ -2,7 +2,7 @@ client 번들링으로 전환 (socket.io 임포트 방식 수정) V
 shared 폴더 생성 V
 
 client와 server측에서 다른 timestamp를 사용하는 문제 해결(online draw메소드 등 수정)
-
+점프 조작감 개선 ( 코요테 타임, 점프 버퍼 ) V
 
 client 와 server가 socket으로 주고받는 데이터 형태
 

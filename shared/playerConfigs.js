@@ -47,6 +47,8 @@ const BasePlayerConfig = {
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
     onGround: true,
+    coyoteTimeCounter: 0, // 남은 코요테 타임을 추적
+    jumpBufferCounter: 0, // 남은 점프 버퍼링 시간을 추적
     
     controls: {
         left: 'a',
