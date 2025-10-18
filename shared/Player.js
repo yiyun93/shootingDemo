@@ -177,13 +177,8 @@ export default class Player {
 
       if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
-        otherPlayer.health -= this.damage;
-        otherPlayer.lastHit = this;
+        otherPlayer.getDamage(this.damage, this, 'hit', timestamp);
         applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
-
-        if (otherPlayer.health <= 0) {
-          this.killPlayer(otherPlayer, timestamp, 'hit');
-        }
         return false;
       }
 
@@ -192,6 +187,14 @@ export default class Player {
     });
     // 탄환 그리기
     this.bullets.forEach(bullet => bullet.draw(ctx));
+  }
+
+  getDamage(damage, source, cause, timestamp){
+    this.health -= damage;
+    this.lastHit = source;
+    if(this.health <= 0){
+      source.killPlayer(this, timestamp, cause);
+    }
   }
 
   setSpawnPoint(x, y) {
