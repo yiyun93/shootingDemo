@@ -5,8 +5,15 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 
-// (임시) 게임 로직 모듈 임포트 (추후 gameManager.js로 대체)
-// const { createPlayer, updateGame, getGameState } = require('./mockGameManager'); 
+// 1. 모듈 임포트
+import 'dotenv/config.js'; // dotenv 초기화
+import express from 'express';
+import http from 'http'; // http는 Node.js 내장 모듈
+import path from 'path'; // path는 Node.js 내장 모듈
+import { Server } from 'socket.io'; // 명명된 임포트 사용
+
+// 게임 로직 모듈 임포트
+const { createPlayer, updateGame, getGameState } = require('./gameManager'); 
 
 // 2. 서버 설정
 const app = express();
@@ -46,13 +53,49 @@ app.get('/', (req, res) => {
 let serverPlayers = {};
 // 서버가 받는 최신 입력 정보 (각 플레이어별로 저장)
 let playerInputs = {};
+// 게임의 종합 상태
+let gameState = {
+    remainingSeconds: 0,
+    gameover: false,
+    restartCountDown: 0,
+    players: { 
+        0: { // Player config + socketId
+            id: 0,
+            socketId: null,
+        }
+    },
+    mapId: 0,
+    round: 0,
+    playerWins: {
+        0: {
+            wins: 0
+        },
+        1: {
+            wins: 0
+        }
+    }
+};
+
+const MAX_PLAYERS = 2;
 
 io.on('connection', (socket) => {
+    // 첫번째 플레이어일 경우 맵 default 생성
+    if(Object.keys(serverPlayers).length === 0){
+        console.log('[대기상태로 돌입합니다]');
+
+    }
     console.log(`[연결] 새로운 플레이어 접속: ${socket.id}`);
 
+    let playerId = NaN;
+    for(let i = 0; i < MAX_PLAYERS ; i++){
+        if(i in serverPlayers){
+            playerId = i;
+            break;
+        }
+    }
     // 새 플레이어 생성 및 초기 상태 설정
-    serverPlayers[socket.id] = createPlayer(socket.id); 
-    playerInputs[socket.id] = {}; // 입력 상태 초기화
+    const newPlayer = createPlayer(socket.id, playerId);
+    playerInputs[playerId] = {}; // 입력 상태 초기화
 
     // --- 이벤트 리스너 설정 ---
 
@@ -109,50 +152,3 @@ httpServer.listen(PORT, () => {
     console.log(`[서버 시작] Game server listening on port ${PORT}`);
     console.log(`[서버 틱] Fixed Tick Rate: ${TICK_RATE} Hz`);
 });
-
-
-// =======================================================
-// 8. (임시) Mock Game Manager (실제 로직은 gameManager.js로 구현 필요)
-// =======================================================
-
-function createPlayer(id) {
-    return { id, x: Math.random() * 500, y: 100, vx: 0, vy: 0, health: 100, color: '#'+(Math.random()*0xFFFFFF<<0).toString(16).padStart(6,'0') };
-}
-
-function updateGame({ serverPlayers, playerInputs, deltaTime }) {
-    for (const id in serverPlayers) {
-        const player = serverPlayers[id];
-        const input = playerInputs[id];
-        
-        // 간단한 이동 로직 예시 (실제 게임 로직은 Player.js, gameManager.js에서 처리)
-        if (input.d) player.x += 100 * deltaTime;
-        if (input.a) player.x -= 100 * deltaTime;
-        
-        // Y축에 중력 적용 (예시)
-        player.vy += 9.8 * deltaTime;
-        player.y += player.vy;
-
-        // 바닥 충돌 처리 (예시)
-        if (player.y > 400) {
-            player.y = 400;
-            player.vy = 0;
-            if (input.w) player.vy = -300; // 점프
-        }
-    }
-}
-
-function getGameState(serverPlayers) {
-    // 클라이언트에 필요한 최소한의 데이터만 전송
-    const state = {};
-    for(const id in serverPlayers) {
-        const p = serverPlayers[id];
-        state[id] = { 
-            id: p.id, 
-            x: Math.round(p.x * 100) / 100, // 소수점 2자리로 반올림하여 전송 (데이터 크기 최적화)
-            y: Math.round(p.y * 100) / 100, 
-            health: p.health, 
-            color: p.color 
-        };
-    }
-    return state;
-}
