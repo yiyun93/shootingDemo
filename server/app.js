@@ -13,7 +13,7 @@ import { createPlayer, updateGame } from './gameManager.js';
 const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3000;
-const TICK_RATE = 60; // 60Hz (서버 틱 속도)
+const TICK_RATE = 60; // (서버 틱 속도)
 
 // 3. Socket.io 서버 초기화 (WebSocket 통신 처리)
 const io = new Server(httpServer, {
@@ -101,7 +101,13 @@ io.on('connection', (socket) => {
         console.log('** 모든 플레이어 입장 잠시후 게임이 시작됩니다.')
     }
 
+    
     // ------------------- 이벤트 리스너 설정 -------------------
+
+    socket.on('clientPing', (sentTime) => {
+        // 클라이언트가 보낸 타임스탬프를 그대로 다시 반환
+        socket.emit('serverPong', sentTime);
+    });
 
     // 1. 클라이언트로부터 입력 수신
     socket.on('playerInput', (keys) => {
