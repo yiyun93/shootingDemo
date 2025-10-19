@@ -1,7 +1,7 @@
 import Bullet from "./Bullet.js";
 import {
   GRAVITY, FRICTION,
-  COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION,
+  COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
 } from "./constants.js";
 import { applyKnockback, isColliding } from "./physics.js";
 
@@ -68,11 +68,24 @@ export default class Player {
       this.jumpBufferCounter = JUMP_BUFFER_DURATION;
     }
 
+    // let isJumpCut = false;
+
+    // // 가변 점프 (jump cut) 처리 (핵심)
+    // if (this.vy < 0 && this.jumpsLeft > 0) {
+    //   // 1. 키를 놓았을 때 점프 컷 실행
+    //   if (!keys[this.controls.jump]) {
+    //     isJumpCut = true;
+    //   }
+    // }
+
     // 점프 버퍼가 있으면 점프처리 지상에 있는 경우 위 코드에서 점프 버퍼를 갱신 후 즉시 시행됨
     if (this.jumpBufferCounter > 0) {
       // A. 지상 점프 또는 코요테 타임 점프 허용
       if (this.onGround || this.coyoteTimeCounter > 0) {
-        // console.log(`${this.color} player jumped (Ground or Coyote Time)`);
+
+        // if(this.onGround) console.log(`${this.color} player jumped on Ground`);
+        // else console.log(`${this.color} player jumped in Coyote Time)`);
+
         this.vy = this.jumpStrength;
         this.onGround = false;
 
@@ -87,8 +100,9 @@ export default class Player {
       // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
       // `else if`를 사용하여 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
       else if (this.jumpsLeft > 0 && this.vy >= this.jumpStrength) {
-        this.jumpsLeft--;
         // console.log(`${this.color} player jumped on the air`);
+        
+        this.jumpsLeft--;
         this.vy = this.jumpStrength;
 
         this.jumpBufferCounter = 0; // 점프 버퍼 초기화
@@ -98,8 +112,18 @@ export default class Player {
       }
     }
 
-    // 중력 적용
-    this.vy += GRAVITY * deltaTime;
+    // 가변 중력 적용
+    let gravityApplied = GRAVITY;
+
+    if (this.vy > 0) {
+      gravityApplied *= JUMP_CUT_MULTIPLIER;
+    }
+    // 추락 속도 제한
+    if (this.vy > -2 * this.jumpStrength) {
+      gravityApplied = 0;
+    }
+
+    this.vy += gravityApplied * deltaTime;
     this.y += this.vy * deltaTime;
 
     if (this.y < 0) {
@@ -189,10 +213,10 @@ export default class Player {
     this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
-  getDamage(damage, source, cause, timestamp){
+  getDamage(damage, source, cause, timestamp) {
     this.health -= damage;
     this.lastHit = source;
-    if(this.health <= 0){
+    if (this.health <= 0) {
       source.killPlayer(this, timestamp, cause);
     }
   }

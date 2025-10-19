@@ -1,3 +1,5 @@
+import { GRAVITY } from "./constants";
+
 const tolerance = 3; // 플랫폼 밟기 판정을 위한 허용 오차
 
 // Axis-Aligned Bounding Box collision
@@ -20,6 +22,12 @@ function isStrictColliding(a, b) {
 }
 
 function step(player, platform) {
+    // 착지 했을 때 x축 속도 줄이기
+    if(player.vy >= player.jumpStrength * -0.5) {
+        // console.log("stemp detected vx" + player.vx + " -> " + player.vx*0.5);
+        player.vx *= 0.5;
+    }
+
     player.y = platform.y - player.height;
     player.vy = 0;
     player.jumpsLeft = player.extraJump;
