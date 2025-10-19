@@ -78,13 +78,23 @@ io.on('connection', (socket) => {
         playerId = i;
         break;
     }
+    if (isNaN(playerId)) {
+        // Full server logic
+        socket.disconnect();
+        return;
+    }
 
     // 새 플레이어 생성 및 초기 상태 설정
     const newPlayer = createPlayer(socket.id, playerId);
     getPlayerId[socket.id] = playerId;
     serverPlayers[playerId] = newPlayer;
-
-    console.log(`[연결] 새로운 플레이어 접속: PlayerId: ${playerId}, SocketId: ${socket.id}`);
+    
+    console.log(`[연결] 새로운 플레이어 접속: playerId: ${playerId}, SocketId: ${socket.id}`);
+    
+    // 새 플레이어에게 현재 게임상태 전송
+    socket.emit('initPlayer', {state: gameState, playerId: playerId});
+    // 다른 모든 플레이어에게 새 플레이어 접속을 알림
+    socket.broadcast.emit('newPlayer', serverPlayers[playerId]);
 
     // 플레이어가 모두 입장한 경우 게임 시작 카운트 실행
     if(Object.keys(serverPlayers).length === MAX_PLAYERS){
@@ -94,7 +104,7 @@ io.on('connection', (socket) => {
     // ------------------- 이벤트 리스너 설정 -------------------
 
     // 1. 클라이언트로부터 입력 수신
-    socket.on('input', (keys) => {
+    socket.on('playerInput', (keys) => {
         // 클라이언트의 최신 키 입력 상태를 저장
         serverPlayers[playerId].keys = keys;
     });
@@ -109,11 +119,6 @@ io.on('connection', (socket) => {
         // 다른 모든 클라이언트에게 플레이어 제거 사실을 알림
         io.emit('playerDisconnected', socket.id);
     });
-
-    // 새 플레이어에게 현재 게임상태 전송
-    socket.emit('gameState', gameState);
-    // 다른 모든 플레이어에게 새 플레이어 접속을 알림
-    socket.broadcast.emit('newPlayer', serverPlayers[playerId]);
 });
 
 

@@ -175,7 +175,7 @@ function resetGame() {
     // 리스폰 포인트 설정
     for(let i = 0; i < players.length; i++){
         players[i].setSpawnPoint( map.spawnPoints[i].x,  map.spawnPoints[i].y );
-    } 
+    }
 
     // 게임 상태 초기화
     isGameOver = false;

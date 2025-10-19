@@ -3,6 +3,7 @@ import { keys } from './inputManager.js';
 import { maps } from '@shared/maps.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
+import { handlePlatformCollision, resolvePlayerOverlap } from '../../shared/physics.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -18,22 +19,11 @@ const scoreElements = {};
 
 let socket = null;
 // 서버로부터 수신받는 게임 상태
-let serverState = {
-    remainingSeconds: 0,
-    roundStartTime: 0,
-    gameover: false,
-    restartCountDown: 0,
-    players: {},
-    mapId: 0, // default
-    round: 0,
-    playerWins: {
-        0: 0,
-        1: 0
-    }
-};
+let serverState = {};
 
 let lastTime; // deltaTime 계산용
 let localPlayer = null; // 클라이언트 예측을 위한 로컬 Player 객체 (Player.js 인스턴스)
+let localPlayerId = NaN;
 
 // 다른 플레이어 보간을 위한 상태 저장 객체: { id: { prev: {x,y,t}, current: {x,y,t} } }
 let otherPlayersState = {};
@@ -60,11 +50,14 @@ export function initializeGameManager(domElements) {
         console.log(`[Online] 접속됨 플레이어ID: ${socket.id}`);
     });
 
-    // 2. 초기 상태, 라운드 초기화 수신 (map, round 등)
-    socket.on('resetRound', (state) => {
-        serverState = state;
+    // 2. 초기 상태
+    socket.on('initPlayer', (data) => {
+        console.log(data);
+        serverState = data.state;
+        localPlayerId = data.playerId;
         resetGame();
-    });
+    })
+    
 
     // 3. 게임 상태 수신 (Tick 마다)
     socket.on('gameState', (state) => {
@@ -74,7 +67,13 @@ export function initializeGameManager(domElements) {
         updateOtherPlayersState(state.players);
     });
 
-    // 4. 연결 끊김
+    // 4. 라운드 초기화
+    socket.on('resetRound', (state) => {
+        serverState = state;
+        resetGame();
+    });
+
+    // 5. 연결 끊김
     socket.on('disconnect', () => {
         console.log(`[Online] 접속 끊김`);
     });
@@ -91,12 +90,18 @@ function updateDom() {
 // **rAF 기반의 클라이언트 게임 루프** (렌더링 및 예측 담당)
 // -------------------------------------------------------------
 let animationId = null;
+
 function gameLoop(timestamp) {
+    if (!localPlayer) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
-    // serverstate.players 는 객체 타입이기 때문에 배열로 전환후 players 에 할당하여 사용
-    const players = Object.values(serverState.players);
+    // serverstate.players 는 객체 타입이기 때문에 배열로 전환후, Player 인스턴스로 만들어서 players 에 할당
+    const players = Object.values(serverState.players).map(playerData => new Player(playerData));
 
     // 1. 키 입력 전송 (requestAnimationFrame 속도로 보냅니다.)
     if (socket && socket.connected) {
@@ -137,7 +142,7 @@ function gameLoop(timestamp) {
     for (const player of players) {
         if(!player.isAlive) continue; // 살아있는 플레이어만 그리기
         // 내 캐릭터인 경우: 예측과 보정 적용
-        if (player.socketId === socket.id) {
+        if (player.id == localPlayerId) {
             reconcilePlayer(player);
             const updateOptions = {
                 keys: keys,
@@ -160,19 +165,21 @@ function gameLoop(timestamp) {
         player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
     });
 
+    // 플랫폼 물리 적용
+    handlePlatformCollision([localPlayer], platforms, timestamp);
 
-    // 물리 적용 파트
+    // 플레이어간 충돌 처리
     for(let i = 0; i < players.length; i++){
         if(!players[i].isAlive) continue;
-
-        // 플랫폼 물리 적용
-        handlePlatformCollision(players[i], platforms, timestamp);
         for(let j = i+1; j < players.length; j++)
             if(players[j].isAlive) resolvePlayerOverlap(players[i], players[j]);
     }
 
+    // console.log(localPlayer, serverState.players[localPlayerId]);
+    
     animationId = requestAnimationFrame(gameLoop);
 }
+
 
 // 게임/라운드 재시작
 function resetGame() {
@@ -185,12 +192,11 @@ function resetGame() {
     const { canvas, ctx } = recreateCanvas(map);
     gameCanvas = canvas;
     gameCtx = ctx;
-    gameCanvas.style.backgroundColor = currentMap.background;
+    gameCanvas.style.backgroundColor = map.background;
 
-    serverState.players.forEach(player => {
-        if (player.socketId == socket.id)
-            localPlayer = new Player(player);
-    })
+    // localPlayer 설정
+    const localPlayerData = serverState.players[localPlayerId];
+    localPlayer = new Player(localPlayerData);
 
     // 루프가 이미 실행 중이 아니라면 시작
     if (animationId === null && localPlayer) {
@@ -205,17 +211,17 @@ function lerp(start, end, amt) {
 }
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
-function reconcilePlayer(serverData) {
+function reconcilePlayer(serverPlayerData) {
     const INTERP_AMOUNT = 0.15; // 핑이 낮으면 더 높게, 핑이 높으면 더 낮게
     if (localPlayer) {
         // [핵심: 보정(Reconciliation)] 서버 위치와 예측 위치 사이의 차이를 보간합니다.
 
         // X, Y 위치 보정
-        localPlayer.x = lerp(localPlayer.x, serverData.x, INTERP_AMOUNT);
-        localPlayer.y = lerp(localPlayer.y, serverData.y, INTERP_AMOUNT);
+        localPlayer.x = lerp(localPlayer.x, serverPlayerData.x, INTERP_AMOUNT);
+        localPlayer.y = lerp(localPlayer.y, serverPlayerData.y, INTERP_AMOUNT);
 
         // 서버의 다른 상태 (체력 등)도 업데이트
-        localPlayer.health = serverData.health;
+        localPlayer.health = serverPlayerData.health;
     }
 }
 
@@ -224,7 +230,7 @@ function updateOtherPlayersState(playersObject) {
     const now = performance.now();
     const players = Object.values(playersObject);
     players.forEach(player => {
-        if (player.socketId === socket.id) return;
+        if (player.id == localPlayerId) return;
 
         const newPlayerData = player;
         const newState = { x: newPlayerData.x, y: newPlayerData.y, timestamp: now };

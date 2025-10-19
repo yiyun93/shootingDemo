@@ -63,7 +63,7 @@ const BasePlayerConfig = {
     isAlive: true,
     deadTime: 0,
     respawnDelay: DEFAULT_RESPAWN_DELAY,
-    isInvincible: true,
+    isInvincible: false,
     invincibilityStartTime: 0,
     invincibilityDuration: DEFAULT_INVINC_DURATION
 };

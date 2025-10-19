@@ -10,9 +10,6 @@ export default class Player {
     Object.assign(this, config); // property 복사
     // respawn을 위한 config정보 저장
     this.defaultState = JSON.parse(JSON.stringify(config));
-
-    // 생성 시 즉시 무적 적용
-    this.setInvincible(performance.now());
   }
 
   move(keys, deltaTime, canvasWidth) {
@@ -193,7 +190,7 @@ export default class Player {
     }
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms) {
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode) {
     this.bullets = this.bullets.filter(bullet => {
       if (!bullet.update(deltaTime, platforms)) {
         return false;
@@ -210,7 +207,7 @@ export default class Player {
       return (bullet.x > 0 && bullet.x < canvasWidth);
     });
     // 탄환 그리기
-    this.bullets.forEach(bullet => bullet.draw(ctx));
+    if(mode === 'offline')  this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
   getDamage(damage, source, cause, timestamp) {

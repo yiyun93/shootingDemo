@@ -14,7 +14,7 @@ export function createPlayer(socketId, playerId) {
         socketId: socketId,
         keys: {}
     })
-    newPlayer.setSpawnPoint( map.spawnPoints[i].x,  map.spawnPoints[i].y );
+    newPlayer.setSpawnPoint( map.spawnPoints[playerId].x,  map.spawnPoints[playerId].y );
     return newPlayer;
 }
 
@@ -49,7 +49,7 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
         }
 
         // 총알 업데이트
-        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
+        player.updateBullets(otherPlayer, deltaTime, map.width, timestamp, null, platforms, 'online');
     };
 
     // 플랫폼 물리 적용
