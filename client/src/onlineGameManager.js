@@ -123,7 +123,7 @@ function gameLoop(timestamp) {
     });
 
     // 게임오버 텍스트 표시
-    if (serverState.gameOver) {
+    if (serverState.gameover) {
         gameCtx.font = '50px Arial';
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
