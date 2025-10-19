@@ -2,11 +2,11 @@ import { BULLET_SPEED, BULLET_SIZE, BULLET_KNOCKBACK_POWER } from "./constants.j
 import { isColliding } from "./physics.js";
 
 export default class Bullet {
-    constructor(x, y, dir, owner) {
+    constructor(x, y, dir, color) {
         this.x = x;
         this.y = y;
         this.dir = dir; // -1 or 1
-        this.owner = owner; // reference to player
+        this.color = color;
         this.width = BULLET_SIZE;
         this.height = BULLET_SIZE;
         this.power = BULLET_KNOCKBACK_POWER;
@@ -24,7 +24,7 @@ export default class Bullet {
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.owner.color;
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, BULLET_SIZE, 0, Math.PI * 2);
         ctx.fill();

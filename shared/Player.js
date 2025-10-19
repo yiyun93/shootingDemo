@@ -80,8 +80,8 @@ export default class Player {
       // A. 지상 점프 또는 코요테 타임 점프 허용
       if (this.onGround || this.coyoteTimeCounter > 0) {
 
-        // if(this.onGround) console.log(`${this.color} player jumped on Ground`);
-        // else console.log(`${this.color} player jumped in Coyote Time)`);
+        if(this.onGround) console.log(`${this.color} player jumped on Ground`);
+        else console.log(`${this.color} player jumped in Coyote Time)`);
 
         this.vy = this.jumpStrength;
         this.onGround = false;
@@ -97,7 +97,7 @@ export default class Player {
       // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
       // `else if`를 사용하여 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
       else if (this.jumpsLeft > 0 && this.vy >= this.jumpStrength) {
-        // console.log(`${this.color} player jumped on the air`);
+        console.log(`${this.color} player jumped on the air`);
         
         this.jumpsLeft--;
         this.vy = this.jumpStrength;
@@ -157,7 +157,7 @@ export default class Player {
         this.x + this.width / 2,
         this.y + this.height / 2,
         this.facing,
-        this
+        this.color
       ));
       //탄약소모 및 타이머 리셋
       this.lastShotTime = timestamp;
@@ -207,7 +207,7 @@ export default class Player {
       return (bullet.x > 0 && bullet.x < canvasWidth);
     });
     // 탄환 그리기
-    if(mode === 'offline')  this.bullets.forEach(bullet => bullet.draw(ctx));
+    if(mode != 'online')  this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
   getDamage(damage, source, cause, timestamp) {
