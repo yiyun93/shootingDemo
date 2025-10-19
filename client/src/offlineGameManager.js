@@ -130,6 +130,7 @@ function gameLoop(timestamp) {
 
     // 플레이어 점수 카운트
     players.forEach(player => {
+        if(isGameOver) return;
         for(const deadPlayer of player.killLog) countPoint(player);
         player.clearKillLog();
     });
@@ -188,7 +189,6 @@ function resetGame() {
 }
 
 function countPoint(player) {
-    if(isGameOver) return;
     playerStats[player.id].wins++;
     playerStats[player.id].scoreElement.innerText = playerStats[player.id].wins;
 }

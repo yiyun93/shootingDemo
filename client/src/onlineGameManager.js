@@ -20,23 +20,15 @@ let socket = null;
 // 서버로부터 수신받는 게임 상태
 let serverState = {
     remainingSeconds: 0,
+    roundStartTime: 0,
     gameover: false,
     restartCountDown: 0,
-    players: { 
-        0: { // Player config + socketId
-            id: 0,
-            socketId: null,
-        }
-    },
-    mapId: 0,
+    players: {},
+    mapId: 0, // default
     round: 0,
     playerWins: {
-        0: {
-            wins: 0
-        },
-        1: {
-            wins: 0
-        }
+        0: 0,
+        1: 0
     }
 };
 
@@ -66,8 +58,6 @@ export function initializeGameManager(domElements) {
     // 1. 연결 성공
     socket.on('connect', () => {
         console.log(`[Online] 접속됨 플레이어ID: ${socket.id}`);
-        // 플레이어 접속 정보 전송
-        socket.emit('playerJoin', { name: 'Player' + socket.id.substring(0, 4) });
     });
 
     // 2. 초기 상태, 라운드 초기화 수신 (map, round 등)

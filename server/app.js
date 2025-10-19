@@ -1,10 +1,3 @@
-// // 1. 모듈 임포트
-// require("dotenv").config();
-// const express = require('express');
-// const http = require('http');
-// const path = require('path');
-// const { Server } = require('socket.io');
-
 // 1. 모듈 임포트
 import 'dotenv/config.js'; // dotenv 초기화
 import express from 'express';
@@ -14,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { Server } from 'socket.io'; // 명명된 임포트 사용
 
 // 게임 로직 모듈 임포트
-import { createPlayer, updateGame, getGameState } from './gameManager.js'; 
+import { createPlayer, updateGame } from './gameManager.js';
 
 // 2. 서버 설정
 const app = express();
@@ -56,28 +49,19 @@ app.get('/', (req, res) => {
 // =======================================================
 
 // 서버가 관리하는 모든 플레이어의 상태 (객체로 관리)
-let serverPlayers = {
-    0: { // Player config + socketId
-            id: 0,
-            socketId: null,
-            keys: {},
-        }
-};
+let serverPlayers = {};
 // 게임의 종합 상태
 let gameState = {
     remainingSeconds: 0,
+    roundStartTime: 0,
     gameover: false,
     restartCountDown: 0,
     players: serverPlayers,
     mapId: 0, // default
     round: 0,
     playerWins: {
-        0: {
-            wins: 0
-        },
-        1: {
-            wins: 0
-        }
+        0: 0,
+        1: 0
     }
 };
 let getPlayerId = {};
@@ -103,7 +87,7 @@ io.on('connection', (socket) => {
     console.log(`[연결] 새로운 플레이어 접속: PlayerId: ${playerId}, SocketId: ${socket.id}`);
 
     // 플레이어가 모두 입장한 경우 게임 시작 카운트 실행
-    if(serverPlayers.length === MAX_PLAYERS){
+    if(Object.keys(serverPlayers).length === MAX_PLAYERS){
         console.log('** 모든 플레이어 입장 잠시후 게임이 시작됩니다.')
     }
 
@@ -126,8 +110,8 @@ io.on('connection', (socket) => {
         io.emit('playerDisconnected', socket.id);
     });
 
-    // 현재 접속된 플레이어 목록을 새 플레이어에게 전송
-    socket.emit('currentPlayers', serverPlayers);
+    // 새 플레이어에게 현재 게임상태 전송
+    socket.emit('gameState', gameState);
     // 다른 모든 플레이어에게 새 플레이어 접속을 알림
     socket.broadcast.emit('newPlayer', serverPlayers[playerId]);
 });
@@ -138,14 +122,19 @@ io.on('connection', (socket) => {
 // =======================================================
 
 const FIXED_DELTA_TIME = 1 / TICK_RATE; // 고정된 델타 타임 (약 0.01666초)
+let timestamp;
 
 setInterval(() => {
+    timestamp = performance.now();
     // 1. 모든 플레이어 입력 처리 및 게임 로직 업데이트
     // 이 함수가 gameManager.js의 핵심 로직을 대체하게 됩니다.
-    updateGame({
-        gameState,
-        deltaTime: FIXED_DELTA_TIME
+    const newGameState = updateGame({
+        gameState: gameState,
+        deltaTime: FIXED_DELTA_TIME,
+        timestamp: timestamp
     });
+    
+    gameState = newGameState;
     
     // 2. 업데이트된 게임 상태를 모든 클라이언트에게 전송
     io.emit('gameState', gameState);
