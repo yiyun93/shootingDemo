@@ -4,6 +4,7 @@ import { maps } from '@shared/maps.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
 import { handlePlatformCollision, resolvePlayerOverlap } from '../../shared/physics.js';
+import Bullet from '../../shared/Bullet.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -54,7 +55,7 @@ export function initializeGameManager(domElements) {
             socket.emit('clientPing', startTime);
         }, 2000);
     });
-    
+
     socket.on('serverPong', (sentTime) => {
         const endTime = performance.now();
         
@@ -166,6 +167,8 @@ function gameLoop(timestamp) {
     //bullet update & draw
     players.forEach(player => {
         const otherPlayer = players.find(p => p.id !== player.id);
+        const bulletArr = player.bullets.map(bulletData => new Bullet(bulletData));
+        player.bullets = bulletArr;
         player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
     });
 
