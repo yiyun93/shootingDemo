@@ -1,4 +1,4 @@
-import { GRAVITY } from "./constants";
+import { GRAVITY } from "./constants.js";
 
 const tolerance = 3; // 플랫폼 밟기 판정을 위한 허용 오차
 

@@ -1,19 +1,20 @@
-// 1. 모듈 임포트
-require("dotenv").config();
-const express = require('express');
-const http = require('http');
-const path = require('path');
-const { Server } = require('socket.io');
+// // 1. 모듈 임포트
+// require("dotenv").config();
+// const express = require('express');
+// const http = require('http');
+// const path = require('path');
+// const { Server } = require('socket.io');
 
 // 1. 모듈 임포트
 import 'dotenv/config.js'; // dotenv 초기화
 import express from 'express';
 import http from 'http'; // http는 Node.js 내장 모듈
 import path from 'path'; // path는 Node.js 내장 모듈
+import { fileURLToPath } from 'url';
 import { Server } from 'socket.io'; // 명명된 임포트 사용
 
 // 게임 로직 모듈 임포트
-const { createPlayer, updateGame, getGameState } = require('./gameManager'); 
+import { createPlayer, updateGame, getGameState } from './gameManager.js'; 
 
 // 2. 서버 설정
 const app = express();
@@ -34,6 +35,11 @@ const io = new Server(httpServer, {
 // ... 서버 시작 ...
 // 4. Express 웹 서버 설정 (정적 파일 제공)
 // 클라이언트 폴더를 정적 파일로 제공하여, 브라우저가 HTML/JS/CSS에 접근 가능하게 함
+
+// 현재 모듈 파일의 절대 URL을 가져옵니다. (ESM에서 파일 경로를 얻는 표준)
+const __filename = fileURLToPath(import.meta.url); 
+// 파일 경로에서 디렉토리 경로만 추출합니다.
+const __dirname = path.dirname(__filename);
 const BUILD_PATH = path.join(__dirname, '../dist'); // project-root/dist를 가리킵니다.
 
 // 빌드 결과물 (index.html, 번들 JS/CSS)을 루트 경로 ('/')에서 서빙합니다.

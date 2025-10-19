@@ -1,15 +1,15 @@
-const Player = require('../shared/Player'); 
-const { Player1Config, Player2Config } = require('../shared/playerConfigs');
-const { map } = require('../shared/maps');
-const { handlePlatformCollision, resolvePlayerOverlap } = require('../shared/physics.js');
+import Player from '../shared/Player.js'; 
+import { Player1Config, Player2Config } from '../shared/playerConfigs.js';
+import { maps } from '../shared/maps.js';
+import { handlePlatformCollision, resolvePlayerOverlap } from '../shared/physics.js';
 
-function createPlayer(socketId, playerId) {
+export function createPlayer(socketId, playerId) {
 
 }
 
 
 
-function updateGame({ serverPlayers, playerInputs, deltaTime }) {
+export function updateGame({ serverPlayers, playerInputs, deltaTime }) {
     for (const id in serverPlayers) {
         const player = serverPlayers[id];
         const input = playerInputs[id];
@@ -31,7 +31,7 @@ function updateGame({ serverPlayers, playerInputs, deltaTime }) {
     }
 }
 
-function getGameState(serverPlayers) {
+export function getGameState(serverPlayers) {
     // 클라이언트에 필요한 최소한의 데이터만 전송
     const state = {};
     for(const id in serverPlayers) {
