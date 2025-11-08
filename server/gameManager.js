@@ -1,7 +1,7 @@
 import Player from '../shared/Player.js';
 import { Player1Config, Player2Config } from '../shared/playerConfigs.js';
 import { maps } from '../shared/maps.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from '../shared/physics.js';
+import { resolvePlayerOverlap } from '../shared/physics.js';
 import { GAME_DURATION } from '../shared/constants.js';
 
 let map = maps[0]; // 대기 맵
@@ -12,9 +12,9 @@ export function createPlayer(socketId, playerId) {
     const newPlayer = new Player({
         ...playerConfig,
         socketId: socketId,
-        keys: {}
+        jumpHold: false
     })
-    newPlayer.setSpawnPoint( map.spawnPoints[playerId].x,  map.spawnPoints[playerId].y );
+    newPlayer.setSpawnPoint(map.spawnPoints[playerId].x, map.spawnPoints[playerId].y);
     return newPlayer;
 }
 
@@ -33,27 +33,27 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
     const activePlayers = players.filter(p => p.isAlive);
 
     for (const player of players) {
-        const keys = player.keys;
         const otherPlayer = players.find(p => p.id !== player.id);
 
-        // 살아있는 플레이어만 움직임 업데이트
-        if (player.isAlive) {
-            const updateOptions = {
-                keys: keys,
-                deltaTime: deltaTime,
-                canvasWidth: map.width,
-                otherPlayer: otherPlayer,
-                timestamp: timestamp
-            };
-            player.update(updateOptions);
+        // 점프키가 계속 눌리고 있을 때 이단 점프 방지
+        if (player.jumpHold && gameState.keys[player.socketId]['KeyW']) {
+            gameState.keys[player.socketId]['KeyW'] = false;
+        }
+        else {
+            player.jumpHold = gameState.keys[player.socketId]['KeyW'];
         }
 
-        // 총알 업데이트
-        player.updateBullets(otherPlayer, deltaTime, map.width, timestamp, null, platforms, 'online');
+        const updateOptions = {
+            keys: gameState.keys[player.socketId],
+            deltaTime: deltaTime,
+            canvasWidth: map.width,
+            otherPlayer: otherPlayer,
+            timestamp: timestamp,
+            platforms: platforms,
+            mode: 'online'
+        };
+        player.update(updateOptions);
     };
-
-    // 플랫폼 물리 적용
-    handlePlatformCollision(activePlayers, platforms, timestamp);
 
     // 둘다 살아 있을 때 충돌 분리
     if (activePlayers.length >= 2) {
@@ -66,8 +66,8 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
 
     // 플레이어 점수 카운트
     players.forEach(player => {
-        if(gameState.gameover) return;
-        for (const deadPlayer of player.killLog){
+        if (gameState.gameover) return;
+        for (const deadPlayer of player.killLog) {
             gameState.playerWins[player.id]++;
         }
         player.clearKillLog();

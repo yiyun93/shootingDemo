@@ -30,13 +30,13 @@ const io = new Server(httpServer, {
 // 클라이언트 폴더를 정적 파일로 제공하여, 브라우저가 HTML/JS/CSS에 접근 가능하게 함
 
 // 현재 모듈 파일의 절대 URL을 가져옵니다. (ESM에서 파일 경로를 얻는 표준)
-const __filename = fileURLToPath(import.meta.url); 
+const __filename = fileURLToPath(import.meta.url);
 // 파일 경로에서 디렉토리 경로만 추출합니다.
 const __dirname = path.dirname(__filename);
 const BUILD_PATH = path.join(__dirname, '../dist'); // project-root/dist를 가리킵니다.
 
 // 빌드 결과물 (index.html, 번들 JS/CSS)을 루트 경로 ('/')에서 서빙합니다.
-app.use(express.static(BUILD_PATH)); 
+app.use(express.static(BUILD_PATH));
 
 // 루트 경로 ('/')로 접속 시 dist 폴더 내의 index.html 파일 제공
 app.get('/', (req, res) => {
@@ -48,6 +48,7 @@ app.get('/', (req, res) => {
 // 5. 게임 데이터 및 Socket.io 이벤트 처리
 // =======================================================
 
+let gameOn = false;
 // 서버가 관리하는 모든 플레이어의 상태 (객체로 관리)
 let serverPlayers = {};
 // 게임의 종합 상태
@@ -62,7 +63,8 @@ let gameState = {
     playerWins: {
         0: 0,
         1: 0
-    }
+    },
+    keys: {}
 };
 let getPlayerId = {};
 
@@ -71,8 +73,8 @@ const MAX_PLAYERS = 2;
 io.on('connection', (socket) => {
     // playerId 할당
     let playerId = NaN;
-    for(let i = 0; i < MAX_PLAYERS ; i++){
-        if(i in serverPlayers){
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+        if (i in serverPlayers) {
             continue;
         }
         playerId = i;
@@ -88,20 +90,25 @@ io.on('connection', (socket) => {
     const newPlayer = createPlayer(socket.id, playerId);
     getPlayerId[socket.id] = playerId;
     serverPlayers[playerId] = newPlayer;
-    
+
     console.log(`[연결] 새로운 플레이어 접속: playerId: ${playerId}, SocketId: ${socket.id}`);
-    
+
     // 새 플레이어에게 현재 게임상태 전송
-    socket.emit('initPlayer', {state: gameState, playerId: playerId});
+    socket.emit('initPlayer', { state: gameState, playerId: playerId });
     // 다른 모든 플레이어에게 새 플레이어 접속을 알림
     socket.broadcast.emit('newPlayer', serverPlayers[playerId]);
 
     // 플레이어가 모두 입장한 경우 게임 시작 카운트 실행
-    if(Object.keys(serverPlayers).length === MAX_PLAYERS){
+    if (Object.keys(serverPlayers).length === MAX_PLAYERS) {
         console.log('** 모든 플레이어 입장 잠시후 게임이 시작됩니다.')
     }
 
-    
+    gameState.keys[socket.id] = {};
+    if (!gameOn) {
+        gameOn = true;
+        init();
+    }
+
     // ------------------- 이벤트 리스너 설정 -------------------
 
     socket.on('clientPing', (sentTime) => {
@@ -112,7 +119,7 @@ io.on('connection', (socket) => {
     // 1. 클라이언트로부터 입력 수신
     socket.on('playerInput', (keys) => {
         // 클라이언트의 최신 키 입력 상태를 저장
-        serverPlayers[playerId].keys = keys;
+        gameState.keys[socket.id] = keys;
     });
 
     // 2. 연결 종료
@@ -135,22 +142,25 @@ io.on('connection', (socket) => {
 const FIXED_DELTA_TIME = 1 / TICK_RATE; // 고정된 델타 타임 (약 0.01666초)
 let timestamp;
 
-setInterval(() => {
-    timestamp = performance.now();
-    // 1. 모든 플레이어 입력 처리 및 게임 로직 업데이트
-    // 이 함수가 gameManager.js의 핵심 로직을 대체하게 됩니다.
-    const newGameState = updateGame({
-        gameState: gameState,
-        deltaTime: FIXED_DELTA_TIME,
-        timestamp: timestamp
-    });
-    
-    gameState = newGameState;
-    
-    // 2. 업데이트된 게임 상태를 모든 클라이언트에게 전송
-    io.emit('gameState', gameState);
+function init() {
+    setInterval(() => {
+        timestamp = performance.now();
+        // 1. 모든 플레이어 입력 처리 및 게임 로직 업데이트
+        // 이 함수가 gameManager.js의 핵심 로직을 대체하게 됩니다.
+        const newGameState = updateGame({
+            gameState: gameState,
+            deltaTime: FIXED_DELTA_TIME,
+            timestamp: timestamp,
+        });
 
-}, 1000 / TICK_RATE);
+        gameState = newGameState;
+
+        // 2. 업데이트된 게임 상태를 모든 클라이언트에게 전송
+        io.emit('gameState', gameState);
+
+    }, 1000 / TICK_RATE);
+}
+
 
 
 // 7. 서버 시작
