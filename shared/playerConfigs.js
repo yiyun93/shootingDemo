@@ -71,7 +71,8 @@ export const Player1Config = {
         shoot: 'Space',
         revolver: 'Digit1',
         pistol: 'Digit2',
-        uzi: 'Digit3'
+        smg: 'Digit3',
+        snipergun: 'Digit4'
     },
 };
 
@@ -92,6 +93,7 @@ export const Player2Config = {
         shoot: 'Numpad0',
         revolver: 'Numpad1',
         pistol: 'Numpad2',
-        uzi: 'Numpad3'
+        smg: 'Numpad3',
+        snipergun: 'Numpad4'
     }
 };

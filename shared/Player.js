@@ -3,7 +3,7 @@ import {
   COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
 } from "./constants.js";
 import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
-import { Bullet, Pistol, Revolver, Uzi } from "./weapons";
+import { Bullet, Pistol, Revolver, Smg, Snipergun } from "./weapons";
 
 export default class Player {
   constructor(config) {
@@ -260,9 +260,13 @@ export default class Player {
       this.gun = new Pistol();
       keys[this.controls.pistol] = false;
     }
-    if(keys[this.controls.uzi]){
-      this.gun = new Uzi();
-      keys[this.controls.uzi] = false;
+    if(keys[this.controls.smg]){
+      this.gun = new Smg();
+      keys[this.controls.smg] = false;
+    }
+    if(keys[this.controls.snipergun]){
+      this.gun = new Snipergun();
+      keys[this.controls.snipergun] = false;
     }
   }
 

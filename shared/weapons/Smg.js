@@ -2,7 +2,7 @@ import Gun from './Gun.js';
 
 const DAMAGE = 4;
 
-export default class Pistol extends Gun {
+export default class Smg extends Gun {
   constructor() {
     super({
       damage: DAMAGE,
