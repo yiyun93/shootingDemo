@@ -13,7 +13,7 @@ const SMG_DEFAULT_CONFIG = {
   bulletConfig: {
     color: '#FDBE02',
     width: 20,
-    height: 4,
+    height: 3,
     damage: DAMAGE,
     power: { x: 180, y: -30 },
     speed: 900

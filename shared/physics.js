@@ -85,8 +85,10 @@ export function handlePlatformCollision(player, platforms, timestamp) {
 
             // 3. lava (플레이어 충돌 시 사망)
             case 'lava':
+                if(!player.isAlive) break;
+                player.y = platform.y - player.height;
+                player.vy = 0;
                 player.stepLava(timestamp);
-                // 사망했으므로 추가 충돌 처리는 불필요
                 break;
         }
     });

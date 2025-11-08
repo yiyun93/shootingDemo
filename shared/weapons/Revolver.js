@@ -13,7 +13,7 @@ const REVOLVER_DEFAULT_CONFIG = {
   bulletConfig: {
     color: '#c79709ff',
     width: 35,
-    height: 5,
+    height: 4,
     damage: DAMAGE,
     power: { x: 550, y: -220 },
     speed: 1100

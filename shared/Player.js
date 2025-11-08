@@ -256,10 +256,15 @@ export default class Player {
   }
 
   stepLava(timestamp) {
+    this.getDamage(0, this.lastHit, 'lava', timestamp);
+
     if (this.lastHit) {
       this.lastHit.killPlayer(this, timestamp, 'threw');
     }
-    this.killPlayer(this, timestamp, 'killed');
+    else{
+      this.killPlayer(this, timestamp, 'killed');
+    }
+    applyKnockback(this, 0, this.jumpStrength * 0.5);
   }
 
   clearKillLog() {

@@ -13,9 +13,9 @@ const PISTOL_DEFAULT_CONFIG = {
   bulletConfig: {
     color: '#E6AB00',
     width: 30,
-    height: 4,
+    height: 3,
     damage: DAMAGE,
-    power: { x: 400, y: -180 },
+    power: { x: 350, y: -180 },
     speed: 1000
   }
 };
