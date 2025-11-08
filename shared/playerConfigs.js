@@ -38,11 +38,11 @@ const BasePlayerConfig = {
     jumpBufferCounter: 0, // 남은 점프 버퍼링 시간을 추적
     
     controls: {
-        left: 'a',
-        right: 'd',
-        jump: 'w',
-        down: 's',
-        shoot: ' '
+        left: 'KeyA',
+        right: 'KeyD',
+        jump: 'KeyW',
+        down: 'KeyS',
+        shoot: 'Space'
     },
     killLog: [],
     lastHitTime: -100,
@@ -64,12 +64,15 @@ export const Player1Config = {
     facing: 1,
     color: 'red',
     controls: {
-        left: 'a',
-        right: 'd',
-        jump: 'w',
-        down: 's',
-        shoot: ' '
-    }
+        left: 'KeyA',
+        right: 'KeyD',
+        jump: 'KeyW',
+        down: 'KeyS',
+        shoot: 'Space',
+        revolver: 'Digit1',
+        pistol: 'Digit2',
+        uzi: 'Digit3'
+    },
 };
 
 // 💡 [수정] Player 2 설정
@@ -86,6 +89,9 @@ export const Player2Config = {
         right: 'ArrowRight',
         jump: 'ArrowUp',
         down: 'ArrowDown',
-        shoot: '0'
+        shoot: 'Numpad0',
+        revolver: 'Numpad1',
+        pistol: 'Numpad2',
+        uzi: 'Numpad3'
     }
 };

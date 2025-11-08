@@ -3,7 +3,7 @@ import {
   COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
 } from "./constants.js";
 import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
-import { Bullet, Pistol, Uzi } from "./weapons";
+import { Bullet, Pistol, Revolver, Uzi } from "./weapons";
 
 export default class Player {
   constructor(config) {
@@ -251,6 +251,21 @@ export default class Player {
     this.killLog = [];
   }
 
+  switchGun(keys){
+    if(keys[this.controls.revolver]){
+      this.gun = new Revolver();
+      keys[this.controls.revolver] = false;
+    }
+    if(keys[this.controls.pistol]){
+      this.gun = new Pistol();
+      keys[this.controls.pistol] = false;
+    }
+    if(keys[this.controls.uzi]){
+      this.gun = new Uzi();
+      keys[this.controls.uzi] = false;
+    }
+  }
+
   // =============================================================================================
 
   update(options) {
@@ -270,6 +285,8 @@ export default class Player {
     this.draw(ctx)
     this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode);
     handlePlatformCollision(this, platforms, timestamp);
+
+    this.switchGun(keys);
 
     // 살아있을때만 진행되는 로직들
     if(!this.isAlive) return;
@@ -293,7 +310,7 @@ export default class Player {
       if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
         if(otherPlayer.getDamage(this.gun.damage, this, 'hit', timestamp)){
-          applyKnockback(otherPlayer, bullet.dir * bullet.power.x * 2, bullet.power.y * 2);
+          applyKnockback(otherPlayer, bullet.dir * bullet.power.x * 1.5, bullet.power.y * 1.5);
         }
         else{
           applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
