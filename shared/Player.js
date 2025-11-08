@@ -8,7 +8,7 @@ import { Bullet, Pistol, Revolver, Smg, Snipergun } from "./weapons";
 export default class Player {
   constructor(config) {
     Object.assign(this, config); // property 복사
-    this.gun = new Pistol();
+    this.gun = new Revolver();
 
     // respawn을 위한 config정보 저장
     this.defaultState = JSON.parse(JSON.stringify(config));
@@ -221,7 +221,7 @@ export default class Player {
 
     const cleanState = JSON.parse(JSON.stringify(this.defaultState));
     Object.assign(this, cleanState);
-    this.gun = new Pistol();
+    this.gun = new Revolver();
     this.setInvincible(timestamp);
   }
 
