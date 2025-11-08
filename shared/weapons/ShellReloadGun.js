@@ -13,7 +13,14 @@ export default class ShellReloadGun extends Gun {
         this.currentAmmo--;
         this.reloading = false;
 
-        return new Bullet(x, y, facing, this.bulletConfig);
+        return new Bullet(
+            {
+                x: x,
+                y: y,
+                dir: facing,
+                ...this.bulletConfig
+            }
+        );
     }
 
     reload(timestamp) {

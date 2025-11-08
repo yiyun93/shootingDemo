@@ -1,10 +1,10 @@
 import { isColliding } from "../physics.js";
 
 export default class Bullet {
-    constructor(x, y, dir, config) {
-        this.x = x;
-        this.y = y;
-        this.dir = dir; // -1 or 1
+    constructor(config) {
+        this.x = config.x;
+        this.y = config.y;
+        this.dir = config.dir; // -1 or 1
 
         this.color = config.color;
         this.width = config.width;

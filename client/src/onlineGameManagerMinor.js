@@ -3,8 +3,7 @@ import { keys } from './inputManager.js';
 import { maps } from '@shared/maps.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from '../../shared/physics.js';
-import Bullet from '../../shared/Bullet.js';
+import Bullet from '@shared/weapons/Bullet.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -159,30 +158,12 @@ function gameLoop(timestamp) {
     }
 
     // 서버가 보내준 데이터로 모든 플레이어 그리기
-    players.forEach(p => {
-        p.draw(gameCtx);
-    })
-    
-
-    //bullet update & draw
     players.forEach(player => {
-        const otherPlayer = players.find(p => p.id !== player.id);
-        const bulletArr = player.bullets.map(bulletData => new Bullet(bulletData));
-        player.bullets = bulletArr;
-        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
-    });
-
-    // 플랫폼 물리 적용
-    handlePlatformCollision([localPlayer], platforms, timestamp);
-
-    // 플레이어간 충돌 처리
-    for(let i = 0; i < players.length; i++){
-        if(!players[i].isAlive) continue;
-        for(let j = i+1; j < players.length; j++)
-            if(players[j].isAlive) resolvePlayerOverlap(players[i], players[j]);
-    }
-
-    // console.log(localPlayer, serverState.players[localPlayerId]);
+        player.draw(gameCtx);
+        player.bullets.forEach(bullet => {
+            bullet.draw(gameCtx);
+        })
+    })
     
     animationId = requestAnimationFrame(gameLoop);
 }

@@ -1,20 +1,39 @@
 import Bullet from './Bullet.js';
 
+/*
+// 총기 스탯
+this.damage = config.damage;
+this.shootRate = config.shootRate; // 연사 속도 (ms)
+this.maxAmmo = config.maxAmmo;
+this.reloadDelay = config.reloadDelay; // 발사 후 재장전까지 딜레이
+this.reloadRate = config.reloadRate;   // 1발당 장전 시간
+this.bulletConfig = config.bulletConfig; // { color, width, height, damage, power, speed }
+
+// 총기 상태
+this.currentAmmo = this.maxAmmo;
+this.lastShotTime = 0;
+this.reloading = false;
+this.reloadTime = 0;
+*/
+
 export default class Gun {
     constructor(config) {
-        // 총기 스탯
-        this.damage = config.damage;
-        this.shootRate = config.shootRate; // 연사 속도 (ms)
-        this.maxAmmo = config.maxAmmo;
-        this.reloadDelay = config.reloadDelay; // 발사 후 재장전까지 딜레이
-        this.reloadRate = config.reloadRate;   // 1발당 장전 시간
-        this.bulletConfig = config.bulletConfig; // { color, width, height, damage, power, speed }
+        Object.assign(this, config);
+        
+        // 기본값 할당
+        if (this.currentAmmo === undefined) {
+            this.currentAmmo = this.maxAmmo;
+        }
+        if (this.lastShotTime === undefined) {
+            this.lastShotTime = 0;
+        }
+        if (this.reloading === undefined) {
+            this.reloading = false;
+        }
+        if (this.reloadTime === undefined) {
+            this.reloadTime = 0;
+        }
 
-        // 총기 현재 상태
-        this.currentAmmo = this.maxAmmo;
-        this.lastShotTime = 0;
-        this.reloading = false;
-        this.reloadTime = 0;
     }
 
     // Player가 이 함수를 호출합니다.
@@ -29,10 +48,12 @@ export default class Gun {
 
         // Bullet 객체를 생성하여 반환
         return new Bullet(
-            x,
-            y,
-            facing,
-            this.bulletConfig
+            {
+                x: x,
+                y: y,
+                dir: facing,
+                ...this.bulletConfig
+            }
         );
     }
 
