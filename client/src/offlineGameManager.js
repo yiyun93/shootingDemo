@@ -1,7 +1,7 @@
 import { Player1Config, Player2Config } from '@shared/playerConfigs.js';
 import { maps } from '@shared/maps.js';
 import { keys } from './inputManager.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from '@shared/physics.js';
+import { resolvePlayerOverlap } from '@shared/physics.js';
 import Player from '@shared/Player.js';
 import { recreateCanvas } from './canvasManager.js';
 import { GAME_DURATION } from '@shared/constants.js';
@@ -96,28 +96,22 @@ function gameLoop(timestamp) {
 
     const activePlayers = players.filter(p => p.isAlive);
 
-    activePlayers.forEach(player => {
-        const otherPlayer = activePlayers.find(p => p.id !== player.id);
+    
+    // 플레이어 업데이트
+    players.forEach(player => {
+        const otherPlayer = players.find(p => p.id !== player.id);
         const updateOptions = {
             keys: keys,
             deltaTime: deltaTime,
             canvasWidth: gameCanvas.width,
             otherPlayer: otherPlayer,
-            timestamp: timestamp
+            timestamp: timestamp,
+            ctx: gameCtx,
+            platforms: platforms
         };
-
         player.update(updateOptions);
-        player.draw(gameCtx);
-    });
-    
-    // 총알은 죽은 플레이어의 총알도 계속 진행
-    players.forEach(player => {
-        const otherPlayer = players.find(p => p.id !== player.id);
-        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
     });
 
-    // 플랫폼 물리 적용
-    handlePlatformCollision(activePlayers, platforms, timestamp);
 
     // 둘다 살아 있을 때 충돌 분리
     if (activePlayers.length >= 2) {

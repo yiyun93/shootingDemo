@@ -3,7 +3,7 @@ import {
   GRAVITY, FRICTION,
   COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
 } from "./constants.js";
-import { applyKnockback, isColliding } from "./physics.js";
+import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
 
 export default class Player {
   constructor(config) {
@@ -13,6 +13,11 @@ export default class Player {
   }
 
   move(keys, deltaTime, canvasWidth) {
+    // 죽은 상태에선 움직임 제한
+    if(!this.isAlive){
+      keys = {};
+    }
+
     // ------------------------ x축 움직임 ------------------------
     if (keys[this.controls.left] && !keys[this.controls.right] && this.vx > -this.speed) {
       this.vx -= this.accel * deltaTime;
@@ -144,6 +149,21 @@ export default class Player {
   killPlayer(deadPlayer, timestamp, cause) {
     deadPlayer.isAlive = false;
     deadPlayer.deadTime = timestamp;
+
+    switch (cause) {
+      case 'hit':
+      default:
+        let temp = deadPlayer.width;
+        deadPlayer.width = deadPlayer.height;
+        deadPlayer.height = temp;
+        break;
+
+      case 'stomped on':
+        deadPlayer.width *= 1.25;
+        deadPlayer.height *= 0.25;
+        break;
+    }
+
     console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`);
     if (this.id != deadPlayer.id) {
       this.killLog.push(deadPlayer);
@@ -190,33 +210,16 @@ export default class Player {
     }
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode) {
-    this.bullets = this.bullets.filter(bullet => {
-      if (!bullet.update(deltaTime, platforms)) {
-        return false;
-      }
-
-      if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
-        // 체력 감소시키고 넉백적용
-        otherPlayer.getDamage(this.damage, this, 'hit', timestamp);
-        applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
-        return false;
-      }
-
-      // canvas 나간 bullet 제거
-      return (bullet.x > 0 && bullet.x < canvasWidth);
-    });
-    // 탄환 그리기
-    if(mode != 'online')  this.bullets.forEach(bullet => bullet.draw(ctx));
-  }
-
+  // 피격 함수 : 받은 데미지로 인해 죽으면 true를 반환, 안죽으면 false 반환
   getDamage(damage, source, cause, timestamp) {
     this.health -= damage;
     this.lastHit = source;
     this.lastHitTime = timestamp;
     if (this.health <= 0) {
       source.killPlayer(this, timestamp, cause);
+      return true;
     }
+    return false;
   }
 
   setSpawnPoint(x, y) {
@@ -261,24 +264,59 @@ export default class Player {
     this.killLog = [];
   }
 
+  // =============================================================================================
+
   update(options) {
+    // 이동, 점프, 물리 처리 등
     const {
       keys,
       deltaTime,
       canvasWidth,
       otherPlayer,
       timestamp,
+      ctx,
+      platforms,
       mode = 'offline'
     } = options;
 
-    // 이동, 점프, 물리 처리 등
-    this.judgeInvicible(timestamp);
     this.move(keys, deltaTime, canvasWidth);
+    this.draw(ctx)
+    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms);
+    handlePlatformCollision(this, platforms, timestamp);
+
+    // 살아있을때만 진행되는 로직들
+    if(!this.isAlive) return;
+
+    this.judgeInvicible(timestamp);
     if (otherPlayer) {
       this.stomp(otherPlayer, timestamp);
     }
     this.shoot(keys, timestamp);
     this.reload(timestamp);
+  }
+
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode) {
+    this.bullets = this.bullets.filter(bullet => {
+      if (!bullet.update(deltaTime, platforms)) {
+        return false;
+      }
+
+      if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
+        // 체력 감소시키고 넉백적용
+        if(otherPlayer.getDamage(this.damage, this, 'hit', timestamp)){
+          applyKnockback(otherPlayer, bullet.dir * bullet.power.x * 2, bullet.power.y * 2);
+        }
+        else{
+          applyKnockback(otherPlayer, bullet.dir * bullet.power.x, bullet.power.y);
+        }
+        return false;
+      }
+
+      // canvas 나간 bullet 제거
+      return (bullet.x > 0 && bullet.x < canvasWidth);
+    });
+    // 탄환 그리기
+    if(mode != 'online')  this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
   // 무적 판정일 때 플레이어 그리기
@@ -327,23 +365,25 @@ export default class Player {
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
-    // 눈
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
-    ctx.fill();
-
     //피격모션 초기화
     ctx.globalAlpha = 1;
 
-    //장전 수 표시
-    ctx.fillStyle = this.color //'#FFD700' 금색 (Gold)
-    let ammoX = this.x + this.width / 2;
-    let ammoY = this.y - this.height / 5
-    for (let i = 0; i < this.currentAmmo; i++) {
+    if(this.isAlive){
+      // 눈
+      ctx.fillStyle = 'black';
       ctx.beginPath();
-      ctx.arc(ammoX, ammoY - 6 * i, 2, 0, Math.PI * 2);
+      ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
       ctx.fill();
+      
+      //장전 수 표시
+      ctx.fillStyle = this.color //
+      let ammoX = this.x + this.width / 2;
+      let ammoY = this.y - this.height / 5
+      for (let i = 0; i < this.currentAmmo; i++) {
+        ctx.beginPath();
+        ctx.arc(ammoX, ammoY - 6 * i, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     /* 장탄수 숫자 표기식 

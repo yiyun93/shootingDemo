@@ -23,7 +23,7 @@ function isStrictColliding(a, b) {
 
 function step(player, platform) {
     // 착지 했을 때 x축 속도 줄이기
-    if(player.vy >= player.jumpStrength * -0.5) {
+    if (player.vy >= player.jumpStrength * -0.5) {
         // console.log("stemp detected vx" + player.vx + " -> " + player.vx*0.5);
         player.vx *= 0.5;
     }
@@ -34,66 +34,64 @@ function step(player, platform) {
 }
 
 // 플랫폼 충돌 처리
-export function handlePlatformCollision(players, platforms, timestamp) {
-    players.forEach(player => {
-        // 충돌 전 위치 저장
-        const prevX = player.x - player.vx;
-        const prevY = player.y - player.vy;
+export function handlePlatformCollision(player, platforms, timestamp) {
+    // 충돌 전 위치 저장
+    const prevX = player.x - player.vx;
+    const prevY = player.y - player.vy;
 
-        let targetOnGround = false;
+    let targetOnGround = false;
 
-        platforms.forEach(platform => {
-            if (!isColliding(player, platform)) return;
+    platforms.forEach(platform => {
+        if (!isColliding(player, platform)) return;
 
-            // 충돌이 발생했을 때 플랫폼 타입에 따라 처리
-            switch (platform.type) {
+        // 충돌이 발생했을 때 플랫폼 타입에 따라 처리
+        switch (platform.type) {
 
-                // 1. hover (플레이어가 위에서 밟을 때만 충돌 처리, 나머지는 통과)
-                case 'hover':
-                default: // 올바르지 않은 type은 일단 hover 취급
-                    // 플레이어가 하강 중이고, 상반신이 플랫폼보다 높이 있다면 (위에서 밟을 때)
-                    if (player.vy >= 0 && player.y + player.height / 2 <= platform.y) {
-                        // 플랫폼 위에 정지
+            // 1. hover (플레이어가 위에서 밟을 때만 충돌 처리, 나머지는 통과)
+            case 'hover':
+            default: // 올바르지 않은 type은 일단 hover 취급
+                // 플레이어가 하강 중이고, 상반신이 플랫폼보다 높이 있다면 (위에서 밟을 때)
+                if (player.vy >= 0 && player.y + player.height / 2 <= platform.y) {
+                    // 플랫폼 위에 정지
+                    step(player, platform);
+                    targetOnGround = true;
+                }
+                break;
+
+            // 2. wall (모든 방향에서 충돌 방지 및 정지)
+            case 'wall':
+                // 충돌 처리 (플레이어가 플랫폼 밖으로 밀려나도록 위치 조정)
+
+                // Y축 이동 때문에 충돌이 발생했는지 확인
+                // pure chaos idk what is happening clearly but it works...
+                if (!isColliding({ ...player, y: prevY }, platform)) {
+                    if (player.vy >= 0 && player.vy >= 0 && player.y + player.height / 2 <= platform.y) {
                         step(player, platform);
                         targetOnGround = true;
-                    }
-                    break;
-
-                // 2. wall (모든 방향에서 충돌 방지 및 정지)
-                case 'wall':
-                    // 충돌 처리 (플레이어가 플랫폼 밖으로 밀려나도록 위치 조정)
-
-                    // Y축 이동 때문에 충돌이 발생했는지 확인
-                    // pure chaos idk what is happening clearly but it works...
-                    if (!isColliding({ ...player, y: prevY }, platform)) {
-                        if (player.vy >= 0 && player.vy >= 0 && player.y + player.height / 2 <= platform.y) {
-                            step(player, platform);
-                            targetOnGround = true;
-                        } else if (player.y + player.height/5 > platform.y + platform.height) { // 상승 중: 플랫폼 아래쪽에 머리 부딪힘
-                            player.y = platform.y + platform.height;
-                            player.vy = 0;
-                        } else if(isStrictColliding(player, platform)){ // x축 이동 충돌 처리
-                            if (player.vx > 0) player.x = platform.x - player.width;
-                            else if (player.vx < 0) player.x = platform.x + platform.width;
-                            player.vx = 0;
-                        }
-                    } else if(isStrictColliding(player, platform)){ // x축 이동 충돌 처리
+                    } else if (player.y + player.height / 5 > platform.y + platform.height) { // 상승 중: 플랫폼 아래쪽에 머리 부딪힘
+                        player.y = platform.y + platform.height;
+                        player.vy = 0;
+                    } else if (isStrictColliding(player, platform)) { // x축 이동 충돌 처리
                         if (player.vx > 0) player.x = platform.x - player.width;
                         else if (player.vx < 0) player.x = platform.x + platform.width;
                         player.vx = 0;
                     }
-                    break;
+                } else if (isStrictColliding(player, platform)) { // x축 이동 충돌 처리
+                    if (player.vx > 0) player.x = platform.x - player.width;
+                    else if (player.vx < 0) player.x = platform.x + platform.width;
+                    player.vx = 0;
+                }
+                break;
 
-                // 3. lava (플레이어 충돌 시 사망)
-                case 'lava':
-                    player.stepLava(timestamp);
-                    // 사망했으므로 추가 충돌 처리는 불필요
-                    break;
-            }
-        });
-
-        player.onGround = targetOnGround;
+            // 3. lava (플레이어 충돌 시 사망)
+            case 'lava':
+                player.stepLava(timestamp);
+                // 사망했으므로 추가 충돌 처리는 불필요
+                break;
+        }
     });
+
+    player.onGround = targetOnGround;
 }
 
 // 겹침 방지
