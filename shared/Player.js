@@ -1,13 +1,15 @@
-import Bullet from "./Bullet.js";
 import {
   GRAVITY, FRICTION,
   COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
 } from "./constants.js";
 import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
+import { Bullet, Pistol, Uzi } from "./weapons";
 
 export default class Player {
   constructor(config) {
     Object.assign(this, config); // property 복사
+    this.gun = new Pistol();
+
     // respawn을 위한 config정보 저장
     this.defaultState = JSON.parse(JSON.stringify(config));
   }
@@ -85,8 +87,8 @@ export default class Player {
       // A. 지상 점프 또는 코요테 타임 점프 허용
       if (this.onGround || this.coyoteTimeCounter > 0) {
 
-        if(this.onGround) console.log(`${this.color} player jumped on Ground`);
-        else console.log(`${this.color} player jumped in Coyote Time)`);
+        // if(this.onGround) console.log(`${this.color} player jumped on Ground`);
+        // else console.log(`${this.color} player jumped in Coyote Time)`);
 
         this.vy = this.jumpStrength;
         this.onGround = false;
@@ -100,9 +102,9 @@ export default class Player {
       }
 
       // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
-      // `else if`를 사용하여 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
+      // 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
       else if (this.jumpsLeft > 0 && this.vy >= this.jumpStrength) {
-        console.log(`${this.color} player jumped on the air`);
+        // console.log(`${this.color} player jumped on the air`);
         
         this.jumpsLeft--;
         this.vy = this.jumpStrength;
@@ -146,7 +148,31 @@ export default class Player {
     }
   }
 
+  // 총기 관련 입력을 처리하는 래퍼(wrapper) 함수
+  handleGun(keys, timestamp) {
+
+    // 1. 발사 시도
+    if (keys[this.controls.shoot]) {
+      const newBullet = this.gun.shoot(
+        this.x + this.width / 2,
+        this.y + this.height / 2,
+        this.facing,
+        timestamp
+      );
+
+      // Gun이 발사에 성공하면(탄약, 쿨타임 충족) Bullet 객체를 반환
+      if (newBullet) {
+        this.bullets.push(newBullet);
+      }
+    }
+
+    // 2. 총기 자체 로직 (재장전 등)
+    this.gun.update(timestamp);
+  }
+
   killPlayer(deadPlayer, timestamp, cause) {
+    if(!deadPlayer.isAlive) return;
+
     deadPlayer.isAlive = false;
     deadPlayer.deadTime = timestamp;
 
@@ -167,46 +193,6 @@ export default class Player {
     console.log(`${this.color} player ${cause} ${deadPlayer.color} player!`);
     if (this.id != deadPlayer.id) {
       this.killLog.push(deadPlayer);
-    }
-  }
-
-  shoot(keys, timestamp) {
-    if (keys[this.controls.shoot] && (timestamp - this.lastShotTime > this.shootRate) && this.currentAmmo > 0) {
-      // 총알 생성
-      this.bullets.push(new Bullet(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
-        this.facing,
-        this.color
-      ));
-      //탄약소모 및 타이머 리셋
-      this.lastShotTime = timestamp;
-      this.currentAmmo--;
-      this.reloading = false;
-    }
-  }
-
-  reload(timestamp) {
-    if (this.currentAmmo === this.maxAmmo) {
-      this.reloading = false;
-      return; // 탄약이 가득 찼으면 장전 로직 종료
-    }
-
-    // A. 자동 장전 시작 조건
-    if (!this.reloading && (
-      //(this.currentAmmo === 0 && timestamp - this.lastShotTime >= this.reloadDelay / 2) ||
-      timestamp - this.lastShotTime >= this.reloadDelay)) {
-      this.reloading = true;
-      this.reloadTime = timestamp;
-    }
-
-    // B. 장전 실행 로직 reloadRate 마다 장전
-    if (this.reloading) {
-      // lastShotTime을 장전 진척도 측정기로 사용 (마지막 발사/장전 시점)
-      if (timestamp - this.reloadTime >= this.reloadRate) {
-        this.currentAmmo++; // 한 발 장전
-        this.reloadTime = timestamp;
-      }
     }
   }
 
@@ -235,6 +221,7 @@ export default class Player {
 
     const cleanState = JSON.parse(JSON.stringify(this.defaultState));
     Object.assign(this, cleanState);
+    this.gun = new Pistol();
     this.setInvincible(timestamp);
   }
 
@@ -281,18 +268,20 @@ export default class Player {
 
     this.move(keys, deltaTime, canvasWidth);
     this.draw(ctx)
-    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms);
+    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode);
     handlePlatformCollision(this, platforms, timestamp);
 
     // 살아있을때만 진행되는 로직들
     if(!this.isAlive) return;
 
+    // 무적 판정
     this.judgeInvicible(timestamp);
+    // 밟기 판정
     if (otherPlayer) {
       this.stomp(otherPlayer, timestamp);
     }
-    this.shoot(keys, timestamp);
-    this.reload(timestamp);
+    // 총기 관련
+    this.handleGun(keys, timestamp);
   }
 
   updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode) {
@@ -303,7 +292,7 @@ export default class Player {
 
       if (otherPlayer?.isAlive && isColliding(bullet, otherPlayer) && !otherPlayer.isInvincible) {
         // 체력 감소시키고 넉백적용
-        if(otherPlayer.getDamage(this.damage, this, 'hit', timestamp)){
+        if(otherPlayer.getDamage(this.gun.damage, this, 'hit', timestamp)){
           applyKnockback(otherPlayer, bullet.dir * bullet.power.x * 2, bullet.power.y * 2);
         }
         else{
@@ -313,7 +302,7 @@ export default class Player {
       }
 
       // canvas 나간 bullet 제거
-      return (bullet.x > 0 && bullet.x < canvasWidth);
+      return (bullet.x + bullet.width > 0 && bullet.x < canvasWidth);
     });
     // 탄환 그리기
     if(mode != 'online')  this.bullets.forEach(bullet => bullet.draw(ctx));
@@ -379,7 +368,7 @@ export default class Player {
       ctx.fillStyle = this.color //
       let ammoX = this.x + this.width / 2;
       let ammoY = this.y - this.height / 5
-      for (let i = 0; i < this.currentAmmo; i++) {
+      for (let i = 0; i < this.gun.currentAmmo; i++) {
         ctx.beginPath();
         ctx.arc(ammoX, ammoY - 6 * i, 2, 0, Math.PI * 2);
         ctx.fill();

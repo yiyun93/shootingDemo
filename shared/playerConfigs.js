@@ -4,12 +4,7 @@ import {
     DEFAULT_PLAYER_ACCEL,
     DEFAULT_JUMP_STRENGTH,
     DEFAULT_EXTRA_JUMP,
-    DEFAULT_MAX_AMMO,
-    DEFAULT_RELOAD_DELAY,
-    DEFAULT_RELOAD_RATE,
-    DEFAULT_SHOOT_RATE,
     DEFAULT_RESPAWN_DELAY,
-    DEFAUAT_DAMAGE,
     DEFAULT_INVINC_DURATION
 } from './constants.js';
 
@@ -31,17 +26,9 @@ const BasePlayerConfig = {
     color: 'red', // 색상은 Player1의 기본값으로 일단 설정
     lastHit: null,
     
-    // 총알 관련
-    damage: DEFAUAT_DAMAGE,
-    shootRate: DEFAULT_SHOOT_RATE,
+    // 총기 관련
+    gun: null,
     bullets: [],
-    lastShotTime: 0,
-    maxAmmo: DEFAULT_MAX_AMMO,
-    currentAmmo: DEFAULT_MAX_AMMO,
-    reloading: false,
-    reloadTime: 0,
-    reloadDelay: DEFAULT_RELOAD_DELAY,
-    reloadRate: DEFAULT_RELOAD_RATE,
     
     // 점프판정 관련
     extraJump: DEFAULT_EXTRA_JUMP,
