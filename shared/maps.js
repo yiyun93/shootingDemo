@@ -17,28 +17,6 @@ const maps = [
         ]
     },
 
-    // // 맵 0: 기본 훈련장 (Basic Training Ground)
-    // {
-    //     id: 1,
-    //     name: "기본 훈련장",
-    //     width: 800,
-    //     height: 600,
-    //     background: '#2c3e50', // 짙은 밤색
-    //     platforms: [
-    //         // 바닥
-    //         { x: 0, y: 550, width: 800, height: 50, color: '#27ae60', type: 'wall' },
-    //         // 낮은 플랫폼
-    //         { x: 100, y: 450, width: 150, height: 20, color: '#c0392b', type: 'hover' },
-    //         { x: 550, y: 450, width: 150, height: 20, color: '#c0392b', type: 'hover' },
-    //         // 중앙 높은 플랫폼
-    //         { x: 300, y: 300, width: 200, height: 20, color: '#9b59b6', type: 'hover' }
-    //     ],
-    //     spawnPoints: [
-    //         { x: 50, y: 500 },
-    //         { x: 720, y: 500 }
-    //     ]
-    // },
-
     // ---
 
     // 맵 1: 거울 대칭 아레나 (Mirror Symmetry Arena)
@@ -135,7 +113,7 @@ const maps = [
         width: 1400,
         height: 700,
         spawnPoints: [{ x: 50, y: 500 }, { x: 720, y : 500 }],
-        background: '#000000', // 검은색 (어두운 동굴)
+        background: '#2c3e50', // 짙은 밤색
         platforms: [
             // 바닥 용암 (lava)
             { x: 0, y: 650, width: 1400, height: 50, color: '#e74c3c', type: 'lava' },
@@ -268,7 +246,7 @@ const maps = [
     name: "사막의 좁은 길",
     width: 1200,
     height: 700,
-    background: '#b8860b', // 어두운 황금색 (사막 느낌)
+    background: '#ebe1c7ff',
     platforms: [
         // 1. 용암 바닥 (떨어지기 쉬움)
         { x: 0, y: 650, width: 1200, height: 50, color: '#e74c3c', type: 'lava' }, 
