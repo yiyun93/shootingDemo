@@ -213,6 +213,7 @@ export default class Player {
   getDamage(damage, source, cause, timestamp) {
     this.health -= damage;
     this.lastHit = source;
+    this.lastHitTime = timestamp;
     if (this.health <= 0) {
       source.killPlayer(this, timestamp, cause);
     }
@@ -312,6 +313,12 @@ export default class Player {
   }
 
   draw(ctx) {
+    // 피격모션
+    let currentTime = performance.now();
+    if(currentTime - this.lastHitTime < 150){
+      ctx.globalAlpha = 0.3;
+    }
+
     // 몸통
     if (this.isInvincible) {
       this.drawInviciblePlayer(ctx)
@@ -325,6 +332,9 @@ export default class Player {
     ctx.beginPath();
     ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
     ctx.fill();
+
+    //피격모션 초기화
+    ctx.globalAlpha = 1;
 
     //장전 수 표시
     ctx.fillStyle = this.color //'#FFD700' 금색 (Gold)

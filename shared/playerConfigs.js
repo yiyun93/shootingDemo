@@ -58,6 +58,7 @@ const BasePlayerConfig = {
         shoot: ' '
     },
     killLog: [],
+    lastHitTime: -100,
     
     // 무적 관련
     isAlive: true,

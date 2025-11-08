@@ -15,7 +15,7 @@ const DEFAULT_JUMP_STRENGTH = -600;
 const DEFAULT_EXTRA_JUMP = 1;
 
 // not property
-const COYOTE_TIME_DURATION = 0.09; // 0.166 * 5프레임
+const COYOTE_TIME_DURATION = 0.07; // 0.166 * 4프레임
 const JUMP_BUFFER_DURATION = 0.05; // 0.166 * 3프레임
 const JUMP_CUT_MULTIPLIER = 1.5;
 
