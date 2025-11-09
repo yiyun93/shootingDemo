@@ -18,27 +18,49 @@ export default class Player {
     // ======================== online ========================
     // 네트워크에서 플레이어 정보를 받아 생성할 때 : 이미 gun정보가 있음
     else {
-      const serverGunData = config.gun;
-      const GunClass = GUN_CLASS_MAP[serverGunData.type];
+      const gunData = config.gun;
+      this.hydrateGun(gunData);
 
-      if (GunClass) {
-        // 해당 type의 클래스 인스턴스를 새로 생성합니다.
-        const newGunInstance = new GunClass(serverGunData);
-        this.gun = newGunInstance;
-      } else {
-        // 오류 처리 (GunType이 잘못된 경우)
-        this.gun = new Revolver();
-      }
-
-      // 서버가 보낸 각 bulletData를 Bullet 클래스 인스턴스로 변환합니다.
-      this.bullets = config.bullets.map(bulletData => new Bullet(bulletData));
+      const bulletsData = config.bullets;
+      this.hydrateBullets(bulletsData);
     }
-
 
     // respawn을 위한 config정보 저장
     this.defaultState = JSON.parse(JSON.stringify(config));
   }
 
+
+  hydrateGun(gunData) {
+    if (!gunData) return;
+
+    const GunClass = GUN_CLASS_MAP[gunData.type];
+    // 알 수 없는 총기 타입
+    if (!GunClass) {
+      this.gun = new Revolver();
+      return;
+    }
+
+    // 1. 총이 다르거나, 총이 없었으면 새로 생성
+    if (!this.gun || this.gun.type !== gunData.type) {
+      this.gun = new GunClass(gunData);
+    }
+
+    // 2. 총기 스펙을 제외한 총기 상태(탄약, 재장전) 업데이트
+    this.gun.currentAmmo = gunData.currentAmmo;
+    this.gun.lastShotTime = gunData.lastShotTime;
+    this.gun.reloading = gunData.reloading;
+    this.gun.reloadTime = gunData.reloadTime;
+  }
+
+  hydrateBullets(bulletsData) {
+    if (!bulletsData) return;
+
+    // [참고] Bullet은 매번 새로 생성하는 것이 상태 동기화에 더 간단할 수 있습니다.
+    // (고급: 기존 총알과 ID를 비교하여 업데이트/삭제/생성할 수도 있습니다)
+    this.bullets = bulletsData.map(data => new Bullet(data));
+  }
+
+  // ... (move, update, draw 등) ...
 
   move(keys, deltaTime, canvasWidth) {
     // 죽은 상태에선 움직임 제한

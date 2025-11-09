@@ -113,11 +113,10 @@ function gameLoop(timestamp) {
     });
 
 
-    // 둘다 살아 있을 때 충돌 분리
-    if (activePlayers.length >= 2) {
-        resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
-    } // 사망자 리스폰
-    else if(!isGameOver) {
+    resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
+
+    // 사망자 리스폰
+    if(!(activePlayers.length >= 2) && !isGameOver) {
         const dead = players.find(p => !p.isAlive);
         if(dead) dead.respawn(timestamp);
     }

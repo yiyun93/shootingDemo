@@ -3,7 +3,7 @@ import { keys } from './inputManager.js';
 import { maps } from '@shared/maps.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
-import { handlePlatformCollision, resolvePlayerOverlap } from '../../shared/physics.js';
+import Bullet from '@shared/weapons/Bullet.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -48,6 +48,20 @@ export function initializeGameManager(domElements) {
     // 1. 연결 성공
     socket.on('connect', () => {
         console.log(`[Online] 접속됨 플레이어ID: ${socket.id}`);
+        setInterval(function () {
+            // 보내는 시점의 고해상도 타임스탬프를 보냅니다.
+            const startTime = performance.now();
+            socket.emit('clientPing', startTime);
+        }, 2000);
+    });
+
+    socket.on('serverPong', (sentTime) => {
+        const endTime = performance.now();
+
+        // 왕복 시간(RTT) 계산 및 소수점 제거
+        const rtt = Math.round(endTime - sentTime);
+
+        console.log(`[Manual Ping Success] 현재 RTT: ${rtt} ms`);
     });
 
     // 2. 초기 상태
@@ -57,13 +71,12 @@ export function initializeGameManager(domElements) {
         localPlayerId = data.playerId;
         resetGame();
     })
-    
+
 
     // 3. 게임 상태 수신 (Tick 마다)
     socket.on('gameState', (state) => {
         serverState = state;
         updateDom();
-        // 틱마다 다른 플레이어들 타임스탬프 기반 보간 시행
         updateOtherPlayersState(state.players);
     });
 
@@ -86,13 +99,37 @@ function updateDom() {
     scoreElements[1].innerText = serverState.playerWins[1];
 }
 
-// -------------------------------------------------------------
+// 게임/라운드 재시작
+function resetGame() {
+    map = maps[serverState.mapId];
+    round = serverState.round;
+    platforms = map.platforms;
+    console.log(`${round} 라운드 : ${map.name} `);
+    roundElement.innerText = `Round ${round}`;
+
+    const { canvas, ctx } = recreateCanvas(map);
+    gameCanvas = canvas;
+    gameCtx = ctx;
+    gameCanvas.style.backgroundColor = map.background;
+
+    // localPlayer 설정
+    const localPlayerData = serverState.players[localPlayerId];
+    localPlayer = new Player(localPlayerData);
+
+    // 루프가 이미 실행 중이 아니라면 시작
+    if (animationId === null && localPlayer) {
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(gameLoop);
+    }
+}
+
+// ------------------------------------------------------------------------------------------
 // **rAF 기반의 클라이언트 게임 루프** (렌더링 및 예측 담당)
-// -------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 let animationId = null;
 
 function gameLoop(timestamp) {
-    if (!localPlayer) {
+    if (!localPlayer || !serverState.players) {
         requestAnimationFrame(gameLoop);
         return;
     }
@@ -100,12 +137,13 @@ function gameLoop(timestamp) {
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
+
     // serverstate.players 는 객체 타입이기 때문에 배열로 전환후, Player 인스턴스로 만들어서 players 에 할당
-    const players = Object.values(serverState.players).map(playerData => new Player(playerData));
+    // const players = Object.values(serverState.players).map(playerData => new Player(playerData));
 
     // 1. 키 입력 전송 (requestAnimationFrame 속도로 보냅니다.)
     if (socket && socket.connected) {
-        socket.emit('playerInput', keys);
+        socket.emit('playerInput', { keys: keys, seq: timestamp });
     }
 
     // ... 캔버스 초기화 ...
@@ -138,72 +176,38 @@ function gameLoop(timestamp) {
         gameCtx.globalAlpha = 1.0;
     }
 
-    // 서버가 보내준 데이터로 모든 플레이어 그리기
-    for (const player of players) {
-        if(!player.isAlive) continue; // 살아있는 플레이어만 그리기
-        // 내 캐릭터인 경우: 예측과 보정 적용
-        if (player.id == localPlayerId) {
-            reconcilePlayer(player);
-            const updateOptions = {
-                keys: keys,
-                deltaTime: deltaTime,
-                canvasWidth: gameCanvas.width,
-                timestamp: timestamp,
-                mode: 'online'
-            };
-            localPlayer.update(updateOptions);
-            localPlayer.draw(gameCtx);
-        } else {
-            // 다른 플레이어는 보간하여 그리기
-            interpolatePlayer(player);
-        }
+
+    // ================================= Player 로직 실행 ==================================
+    // ------------------------------------------------------------------------------------
+
+    // 1. 로컬 플레이어 (예측 및 보정)
+    // 1-A. 서버 데이터로 보정 (Reconcile)
+    const serverLocalPlayerData = serverState.players[localPlayerId];
+    if (serverLocalPlayerData) {
+        reconcilePlayer(localPlayer, serverLocalPlayerData);
+        // (참고) 여기에 localPlayer.update(keys, deltaTime) 예측 로직이 추가되어야 합니다.
     }
 
-    //bullet update & draw
-    players.forEach(player => {
-        const otherPlayer = players.find(p => p.id !== player.id);
-        player.updateBullets(otherPlayer, deltaTime, gameCanvas.width, timestamp, gameCtx, platforms);
+    // 1-B. 로컬 플레이어 그리기
+    localPlayer.draw(gameCtx);
+    localPlayer.bullets.forEach(bullet => { // 로컬 플레이어의 총알만 그립니다.
+        bullet.draw(gameCtx);
     });
 
-    // 플랫폼 물리 적용
-    handlePlatformCollision([localPlayer], platforms, timestamp);
+    // 2. 다른 플레이어 (보간)
+    // 서버가 보낸 '현재' 상태를 순회하며 보간 함수를 호출합니다.
+    Object.values(serverState.players).forEach(playerData => {
+        if (playerData.id === localPlayerId) return; // 로컬 플레이어는 건너뜀
 
-    // 플레이어간 충돌 처리
-    for(let i = 0; i < players.length; i++){
-        if(!players[i].isAlive) continue;
-        for(let j = i+1; j < players.length; j++)
-            if(players[j].isAlive) resolvePlayerOverlap(players[i], players[j]);
-    }
+        // [수정] interpolatePlayer가 서버의 'playerData'를 기반으로 보간하도록 호출
+        // (interpolatePlayer 함수는 내부적으로 new Player()를 사용해 그리고 있습니다)
+        interpolatePlayer(playerData);
+    });
 
-    // console.log(localPlayer, serverState.players[localPlayerId]);
-    
     animationId = requestAnimationFrame(gameLoop);
 }
 
 
-// 게임/라운드 재시작
-function resetGame() {
-    map = maps[serverState.mapId];
-    round = serverState.round;
-    platforms = map.platforms;
-    console.log(`${round} 라운드 : ${map.name} `);
-    roundElement.innerText = `Round ${round}`;
-
-    const { canvas, ctx } = recreateCanvas(map);
-    gameCanvas = canvas;
-    gameCtx = ctx;
-    gameCanvas.style.backgroundColor = map.background;
-
-    // localPlayer 설정
-    const localPlayerData = serverState.players[localPlayerId];
-    localPlayer = new Player(localPlayerData);
-
-    // 루프가 이미 실행 중이 아니라면 시작
-    if (animationId === null && localPlayer) {
-        lastTime = performance.now();
-        animationId = requestAnimationFrame(gameLoop);
-    }
-}
 
 // 선형 보간(Linear Interpolation) 함수. 부드러운 움직임을 위해 추가
 function lerp(start, end, amt) {
@@ -211,18 +215,31 @@ function lerp(start, end, amt) {
 }
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
-function reconcilePlayer(serverPlayerData) {
-    const INTERP_AMOUNT = 0.15; // 핑이 낮으면 더 높게, 핑이 높으면 더 낮게
-    if (localPlayer) {
-        // [핵심: 보정(Reconciliation)] 서버 위치와 예측 위치 사이의 차이를 보간합니다.
+function reconcilePlayer(player, serverPlayerData) {
+    const INTERP_AMOUNT = 0.75; // 높을 수록 즉각적인 보정, 낮을 수록 부드러운 보정
+    if (!player) return;
 
-        // X, Y 위치 보정
-        localPlayer.x = lerp(localPlayer.x, serverPlayerData.x, INTERP_AMOUNT);
-        localPlayer.y = lerp(localPlayer.y, serverPlayerData.y, INTERP_AMOUNT);
+    // [핵심: 보정(Reconciliation)] 서버 위치와 예측 위치 사이의 차이를 보간합니다.
 
-        // 서버의 다른 상태 (체력 등)도 업데이트
-        localPlayer.health = serverPlayerData.health;
-    }
+    // 1. 서버 데이터에서 특별히 처리할 속성들을 분리합니다.
+    const {
+        x,                         // 보간(Lerp) 처리
+        y,                         // 보간(Lerp) 처리
+        gun: serverGunData,        // Hydration 처리
+        bullets: serverBulletData, // Hydration 처리
+        ...restOfData              // 덮어쓸 나머지 모든 데이터
+    } = serverPlayerData;
+
+    // 2. [보간] x, y 위치는 부드럽게 보정
+    player.x = lerp(player.x, x, INTERP_AMOUNT);
+    player.y = lerp(player.y, y, INTERP_AMOUNT);
+
+    // 3. [즉시 덮어쓰기] 나머지 모든 단순 상태(health, vx, vy, isAlive 등)
+    Object.assign(player, restOfData);
+
+    // 4. [Hydration] 중첩된 객체는 수동으로 업데이트/재생성
+    player.hydrateGun(serverGunData);
+    player.hydrateBullets(serverBulletData);
 }
 
 // 틱마다 서버에서 state를 받아 otherPlayerState 업데이트

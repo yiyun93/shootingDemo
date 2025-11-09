@@ -98,6 +98,8 @@ export function handlePlatformCollision(player, platforms, timestamp) {
 
 // 겹침 방지
 export function resolvePlayerOverlap(a, b) {
+    if(!a.isAlive || !b.isAlive) return;
+    
     // AABB 중심 좌표
     const aCenterX = a.x + a.width / 2;
     const aCenterY = a.y + a.height / 2;
