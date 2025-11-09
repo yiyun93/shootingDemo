@@ -122,9 +122,9 @@ export default class Player {
         keys[this.controls.jump] = false;
       }
 
-      // B. 공중 점프 (이중 점프) 허용. 최대 점프속도의 절반 보다 낮을 때만
+      // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
       // 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
-      else if (this.jumpsLeft > 0 && this.vy > this.jumpStrength * 0.2) {
+      else if (this.jumpsLeft > 0 && this.vy > this.jumpStrength * 0.5) {
         // console.log(`${this.color} player jumped on the air`);
 
         this.jumpsLeft--;

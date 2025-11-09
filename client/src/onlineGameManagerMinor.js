@@ -62,11 +62,6 @@ export function initializeGameManager(domElements) {
         const rtt = Math.round(endTime - sentTime);
         
         console.log(`[Manual Ping Success] 현재 RTT: ${rtt} ms`);
-        
-        // 여기에 RTT 값을 화면에 표시하는 로직을 추가할 수 있습니다.
-        // if (pingElement) {
-        //     pingElement.textContent = `Ping: ${rtt} ms`;
-        // }
     });
 
     // 2. 초기 상태
@@ -111,7 +106,7 @@ function updateDom() {
 let animationId = null;
 
 function gameLoop(timestamp) {
-    if (!localPlayer) {
+    if (!localPlayer || !serverState.players) {
         requestAnimationFrame(gameLoop);
         return;
     }
@@ -119,12 +114,13 @@ function gameLoop(timestamp) {
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
+
     // serverstate.players 는 객체 타입이기 때문에 배열로 전환후, Player 인스턴스로 만들어서 players 에 할당
-    const players = Object.values(serverState.players).map(playerData => new Player(playerData));
+    // const players = Object.values(serverState.players).map(playerData => new Player(playerData));
 
     // 1. 키 입력 전송 (requestAnimationFrame 속도로 보냅니다.)
     if (socket && socket.connected) {
-        socket.emit('playerInput', keys);
+        socket.emit('playerInput', {keys: keys, seq: timestamp});
     }
 
     // ... 캔버스 초기화 ...
@@ -157,13 +153,30 @@ function gameLoop(timestamp) {
         gameCtx.globalAlpha = 1.0;
     }
 
-    // 서버가 보내준 데이터로 모든 플레이어 그리기
-    players.forEach(player => {
-        player.draw(gameCtx);
-        player.bullets.forEach(bullet => {
-            bullet.draw(gameCtx);
-        })
-    })
+    // // 서버가 보내준 데이터로 모든 플레이어 그리기
+    // players.forEach(player => {
+    //     player.draw(gameCtx);
+    //     player.bullets.forEach(bullet => {
+    //         bullet.draw(gameCtx);
+    //     })
+    // })
+
+    // ========================= Player 로직 실행 ==========================
+    // ====================================================================
+
+    // 1. 로컬 플레이어 (예측 및 보정)
+    // 1-A. 서버 데이터로 보정 (Reconcile)
+    const serverPlayerData = serverState.players[localPlayerId];
+    if (serverPlayerData) {
+        reconcilePlayer(serverPlayerData);
+        // (참고) 여기에 localPlayer.update(keys, deltaTime) 예측 로직이 추가되어야 합니다.
+    }
+    
+    // 1-B. 로컬 플레이어 그리기
+    localPlayer.draw(gameCtx);
+    localPlayer.bullets.forEach(bullet => { // 로컬 플레이어의 총알만 그립니다.
+        bullet.draw(gameCtx);
+    });
     
     animationId = requestAnimationFrame(gameLoop);
 }

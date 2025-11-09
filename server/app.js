@@ -64,7 +64,8 @@ let gameState = {
         0: 0,
         1: 0
     },
-    keys: {}
+    keys: {},
+    seqs: {}
 };
 let getPlayerId = {};
 
@@ -104,6 +105,7 @@ io.on('connection', (socket) => {
     }
 
     gameState.keys[socket.id] = {};
+    gameState.seqs[socket.id] = 0;
     if (!gameOn) {
         gameOn = true;
         init();
@@ -117,9 +119,12 @@ io.on('connection', (socket) => {
     });
 
     // 1. 클라이언트로부터 입력 수신
-    socket.on('playerInput', (keys) => {
+    socket.on('playerInput', (data) => {
+        const keys = data.keys;
+        const seq = data.seq;
         // 클라이언트의 최신 키 입력 상태를 저장
         gameState.keys[socket.id] = keys;
+        gameState.seqs[socket.id] = seq;
     });
 
     // 2. 연결 종료

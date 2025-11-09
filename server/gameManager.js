@@ -1,5 +1,5 @@
 import Player from '../shared/Player.js';
-import { Player1Config, Player2Config } from '../shared/playerConfigs.js';
+import { playerConfigs } from '../shared/playerConfigs.js';
 import { maps } from '../shared/maps.js';
 import { resolvePlayerOverlap } from '../shared/physics.js';
 import { GAME_DURATION } from '../shared/constants.js';
@@ -8,11 +8,11 @@ let map = maps[0]; // 대기 맵
 let platforms = map.platforms;
 
 export function createPlayer(socketId, playerId) {
-    const playerConfig = playerId ? Player2Config : Player1Config;
+    const playerConfig = playerConfigs[playerId];
     const newPlayer = new Player({
         ...playerConfig,
         socketId: socketId,
-        jumpHold: false
+        jumpKeyBuffer: false,
     })
     newPlayer.setSpawnPoint(map.spawnPoints[playerId].x, map.spawnPoints[playerId].y);
     return newPlayer;
@@ -36,11 +36,13 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
         const otherPlayer = players.find(p => p.id !== player.id);
 
         // 점프키가 계속 눌리고 있을 때 이단 점프 방지
-        if (player.jumpHold && gameState.keys[player.socketId]['KeyW']) {
+        if (player.jumpKeyBuffer && gameState.keys[player.socketId]['KeyW']) {
             gameState.keys[player.socketId]['KeyW'] = false;
+            //console.log('버퍼로 인해 점프키가 false로 설정됨');
         }
-        else {
-            player.jumpHold = gameState.keys[player.socketId]['KeyW'];
+        else if(player.jumpKeyBuffer != gameState.keys[player.socketId]['KeyW']){
+            player.jumpKeyBuffer = gameState.keys[player.socketId]['KeyW'];
+            //console.log("점프키가 설정됨", player.jumpKeyBuffer);
         }
 
         const updateOptions = {

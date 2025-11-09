@@ -1,4 +1,4 @@
-import { Player1Config, Player2Config } from '@shared/playerConfigs.js';
+import { playerConfigs } from '@shared/playerConfigs.js';
 import { maps } from '@shared/maps.js';
 import { keys } from './inputManager.js';
 import { resolvePlayerOverlap } from '@shared/physics.js';
@@ -162,8 +162,8 @@ function resetGame() {
     gameCanvas.style.backgroundColor = map.background;
 
     players = [
-        new Player(Player1Config),
-        new Player(Player2Config)
+        new Player(playerConfigs[0]),
+        new Player(playerConfigs[1])
     ];
 
     // 리스폰 포인트 설정

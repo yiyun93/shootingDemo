@@ -25,11 +25,11 @@ const BasePlayerConfig = {
     facing: 1,
     color: 'red', // 색상은 Player1의 기본값으로 일단 설정
     lastHit: null,
-    
+
     // 총기 관련
     gun: null,
     bullets: [],
-    
+
     // 점프판정 관련
     extraJump: DEFAULT_EXTRA_JUMP,
     jumpsLeft: DEFAULT_EXTRA_JUMP,
@@ -37,7 +37,7 @@ const BasePlayerConfig = {
     onJump: false,
     coyoteTimeCounter: 0, // 남은 코요테 타임을 추적
     jumpBufferCounter: 0, // 남은 점프 버퍼링 시간을 추적
-    
+
     controls: {
         left: 'KeyA',
         right: 'KeyD',
@@ -47,7 +47,7 @@ const BasePlayerConfig = {
     },
     killLog: [],
     lastHitTime: -100,
-    
+
     // 무적 관련
     isAlive: true,
     deadTime: 0,
@@ -57,44 +57,45 @@ const BasePlayerConfig = {
     invincibilityDuration: DEFAULT_INVINC_DURATION
 };
 
-export const Player1Config = {
-    ...BasePlayerConfig, 
-    
-    // 고유 설정
-    id: 0,
-    facing: 1,
-    color: 'red',
-    controls: {
-        left: 'KeyA',
-        right: 'KeyD',
-        jump: 'KeyW',
-        down: 'KeyS',
-        shoot: 'Space',
-        revolver: 'Digit1',
-        pistol: 'Digit2',
-        smg: 'Digit3',
-        snipergun: 'Digit4'
-    },
-};
+export const playerConfigs = [
+    {
+        id: 0,
+        ...BasePlayerConfig,
 
-// 💡 [수정] Player 2 설정
-export const Player2Config = {
-    ...BasePlayerConfig, 
-    
-    // 고유 설정
-    id: 1,
-    y: 500,
-    facing: -1,
-    color: 'blue',
-    controls: {
-        left: 'ArrowLeft',
-        right: 'ArrowRight',
-        jump: 'ArrowUp',
-        down: 'ArrowDown',
-        shoot: 'Numpad0',
-        revolver: 'Numpad1',
-        pistol: 'Numpad2',
-        smg: 'Numpad3',
-        snipergun: 'Numpad4'
+        // 고유 설정
+        facing: 1,
+        color: 'red',
+        controls: {
+            left: 'KeyA',
+            right: 'KeyD',
+            jump: 'KeyW',
+            down: 'KeyS',
+            shoot: 'Space',
+            revolver: 'Digit1',
+            pistol: 'Digit2',
+            smg: 'Digit3',
+            snipergun: 'Digit4'
+        },
+    },
+
+    {
+        id: 1,
+        ...BasePlayerConfig,
+
+        // 고유 설정
+        y: 500,
+        facing: -1,
+        color: 'blue',
+        controls: {
+            left: 'ArrowLeft',
+            right: 'ArrowRight',
+            jump: 'ArrowUp',
+            down: 'ArrowDown',
+            shoot: 'Numpad0',
+            revolver: 'Numpad1',
+            pistol: 'Numpad2',
+            smg: 'Numpad3',
+            snipergun: 'Numpad4'
+        }
     }
-};
+];
