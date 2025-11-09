@@ -159,7 +159,7 @@ export default class Player {
 
     // 아래 키를 누르면 더 빨리 하강
     if (keys[this.controls.down]) {
-      gravityApplied *= 2;
+      gravityApplied *= JUMP_CUT_MULTIPLIER;
     }
 
     // 추락 속도 제한
