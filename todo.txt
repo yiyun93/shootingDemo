@@ -3,31 +3,28 @@ shared 폴더 생성 V
 
 client와 server측에서 다른 timestamp를 사용하는 문제 해결(online draw메소드 등 수정)
 
-점프 조작감 개선 ( 코요테 타임, 점프 버퍼 ) V
-    빠른 추락, 가변 점프 <- 폭발로 인한 y축 넉백이랑 충돌 가능성 )
+점프 조작감 개선 
+    코요테 타임 V
+    점프 버퍼 V
+    빠른 추락 V
+    빠른 초반 상승 가속 이후 급격한 속력저하
 
-서버단에서 ES module형태로 임포트문 전환
+    (가변 점프) <- 폭발로 인한 y축 넉백이랑 충돌 가능성
 
-client 와 server가 socket으로 주고받는 데이터 형태
 
-state = {
-    remainingSeconds:
-    gameover:
-    restartCountDown:
-    players: { 
-        0: {
-            id: 0
-            socketId:
-        }
-    },
-    mapId:
-    round:
-    playerWins: {
-        0: {
-            wins: 0
-        },
-        1: {
-            wins: 0
-        }
-    }
-}
+쾌적한 멀티플레이 환경을 위한 기법 적용
+
+- Client-Side Prediction 
+- Server Reconciliation
+
+- Entity Interpolation
+
+(- Lag Compensation )
+
+
+
+
+
+
+
+// https://copyrat90.github.io/2025/04/05/fast-paced-multiplayer-1

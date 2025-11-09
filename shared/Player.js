@@ -1,6 +1,6 @@
 import {
   GRAVITY, FRICTION,
-  COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER
+  COYOTE_TIME_DURATION, JUMP_BUFFER_DURATION, JUMP_CUT_MULTIPLIER, JUMP_FLOAT_MULTIPLIER
 } from "./constants.js";
 import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
 import { Bullet, Pistol, Revolver, Smg, Snipergun } from "./weapons/index.js";
@@ -39,6 +39,7 @@ export default class Player {
     this.defaultState = JSON.parse(JSON.stringify(config));
   }
 
+
   move(keys, deltaTime, canvasWidth) {
     // 죽은 상태에선 움직임 제한
     if (!this.isAlive) {
@@ -55,8 +56,12 @@ export default class Player {
       this.facing = 1;
     }
     else { // 양쪽 키 동시 입력 또는 키를 놓았을 때 + 또는 이미 플레이어속도를 초과했을 때
-      if (this.onGround) this.vx *= (1 - FRICTION * deltaTime);
-      else this.vx *= (1 - (FRICTION * deltaTime) / 3) // 공중에 있을 땐 마찰력 1/3만 적용
+      if (this.onGround) {
+        this.vx *= (1 - FRICTION * deltaTime);
+      }
+      else {
+        this.vx *= (1 - (FRICTION * deltaTime) / 3) // 공중에 있을 땐 마찰력 1/3만 적용
+      }
       // 떨림 방지
       if (Math.abs(this.vx) < 0.1) {
         this.vx = 0;
@@ -105,8 +110,9 @@ export default class Player {
         // if (this.onGround) console.log(`${this.color} player jumped on Ground`);
         // else console.log(`${this.color} player jumped in Coyote Time)`);
 
-        this.vy = this.jumpStrength;
+        this.vy += this.jumpStrength;
         this.onGround = false;
+        this.onJump = true;
 
         // 점프 성공시 코요테/버퍼 타임 소진
         this.coyoteTimeCounter = 0;
@@ -118,11 +124,12 @@ export default class Player {
 
       // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
       // 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
-      else if (this.jumpsLeft > 0 && this.vy >= this.jumpStrength) {
+      else if (this.jumpsLeft > 0 && this.vy > this.jumpStrength) {
         // console.log(`${this.color} player jumped on the air`);
 
         this.jumpsLeft--;
         this.vy = this.jumpStrength;
+        this.onJump = true;
 
         this.jumpBufferCounter = 0; // 점프 버퍼 초기화
 
@@ -131,12 +138,30 @@ export default class Player {
       }
     }
 
-    // 가변 중력 적용
+    // ---------------------- 가변 중력 적용 -----------------------
     let gravityApplied = GRAVITY;
+    let jumpCutPeriod = this.jumpStrength * -0.10;
 
+    // 추락 가변 가속도 적용
     if (this.vy > 0) {
-      gravityApplied *= JUMP_CUT_MULTIPLIER;
+      this.onJump = false;
+      // 상단 구간에서 천천히 떨어지기
+      if (this.vy < jumpCutPeriod) {
+        gravityApplied *= JUMP_FLOAT_MULTIPLIER;
+      }
+      else {
+        // 하강 4분의 1 지점 부터 4분의 2 지점까지 가속도 배수 interpolation
+        const t = Math.min(1, (this.vy - jumpCutPeriod) / (jumpCutPeriod));
+        const multiplier = (1 - t) * JUMP_FLOAT_MULTIPLIER + t * JUMP_CUT_MULTIPLIER;
+        gravityApplied *= multiplier;
+      }
     }
+
+    // 아래 키를 누르면 더 빨리 하강
+    if (keys[this.controls.down]) {
+      gravityApplied *= 2;
+    }
+
     // 추락 속도 제한
     if (this.vy > -2 * this.jumpStrength) {
       gravityApplied = 0;
@@ -261,7 +286,7 @@ export default class Player {
     if (this.lastHit) {
       this.lastHit.killPlayer(this, timestamp, 'threw');
     }
-    else{
+    else {
       this.killPlayer(this, timestamp, 'killed');
     }
     applyKnockback(this, 0, this.jumpStrength * 0.5);
