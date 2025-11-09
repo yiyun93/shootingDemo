@@ -15,7 +15,7 @@ const SMG_DEFAULT_CONFIG = {
     width: 20,
     height: 3,
     damage: DAMAGE,
-    power: { x: 180, y: -30 },
+    power: { x: 200, y: -80 },
     speed: 900
   }
 }
