@@ -113,7 +113,7 @@ function gameLoop(timestamp) {
     });
 
 
-    resolvePlayerOverlap(activePlayers[0], activePlayers[1]);
+    resolvePlayerOverlap(players[0], players[1]);
 
     // 사망자 리스폰
     if(!(activePlayers.length >= 2) && !isGameOver) {

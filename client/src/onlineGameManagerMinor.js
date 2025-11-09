@@ -194,23 +194,10 @@ function gameLoop(timestamp) {
     // 1-A. 서버 데이터로 보정 (Reconcile)
     const localPlayerData = serverState.players[localPlayerId];
     if (localPlayerData) {
-        reconcilePlayer(localPlayer, localPlayerData, LOCAL_INTER_AMOUNT);
+        reconcilePlayer(localPlayer, localPlayerData, INTER_AMOUNT);
     }
 
-    // 1-B. 예측 후 그리기
-
-    // 움직임만 예측
-    if (localPlayer.isAlive) {
-        localPlayer.move(keys, deltaTime, gameCanvas.width);
-        handlePlatformCollision(localPlayer, platforms, timestamp);
-
-        if (otherPlayers) {
-            Object.values(otherPlayers).forEach(player => {
-                resolvePlayerOverlap(localPlayer, player);
-            })
-        }
-    }
-
+    // 1-B. 그리기
     localPlayer.draw(gameCtx);
     localPlayer.bullets.forEach(bullet => {
         bullet.draw(gameCtx);
@@ -220,7 +207,7 @@ function gameLoop(timestamp) {
     Object.values(otherPlayers).forEach(player => {
         const playerData = serverState.players[player.id];
         if (playerData) {
-            reconcilePlayer(player, playerData, LOCAL_INTER_AMOUNT);
+            reconcilePlayer(player, playerData, INTER_AMOUNT);
         }
         else {
             player = null;
@@ -243,12 +230,11 @@ function lerp(start, end, amt) {
     return start + (end - start) * amt;
 }
 
-const LOCAL_INTER_AMOUNT = 0.75;
+const INTER_AMOUNT = 0.75; // 높을 수록 즉각적인 보정, 낮을 수록 부드러운 보정
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
 function reconcilePlayer(player, serverPlayerData, amount) {
     if (!player) return;
-    let interAmount = amount; // 높을 수록 즉각적인 보정, 낮을 수록 부드러운 보정
 
     // [핵심: 보정(Reconciliation)] 서버 위치와 예측 위치 사이의 차이를 보간합니다.
 
@@ -264,10 +250,10 @@ function reconcilePlayer(player, serverPlayerData, amount) {
     } = serverPlayerData;
 
     // 2. [보간] x, y 위치는 부드럽게 보정
-    player.x = lerp(player.x, x, interAmount);
-    player.y = lerp(player.y, y, interAmount);
-    player.vx = lerp(player.vx, vx, interAmount);
-    player.vy = lerp(player.vy, vy, interAmount);
+    player.x = lerp(player.x, x, amount);
+    player.y = lerp(player.y, y, amount);
+    player.vx = lerp(player.vx, vx, amount);
+    player.vy = lerp(player.vy, vy, amount);
 
     // 3. [즉시 덮어쓰기] 나머지 모든 단순 상태(health, vx, vy, isAlive 등)
     Object.assign(player, restOfData);

@@ -39,8 +39,8 @@ async function launchGame(mode) {
         console.log("오프라인 모드로 게임을 시작합니다.");
     } else if (mode === 'online') {
         // 온라인 모듈 로드 (Socket.io 통신 로직 포함)
-        //GameManagerModule = await import('./onlineGameManager.js');
-        GameManagerModule = await import('./onlineGameManagerMinor.js');
+        GameManagerModule = await import('./onlineGameManager.js');
+        //GameManagerModule = await import('./onlineGameManagerMinor.js');
         console.log("온라인 모드로 게임을 시작합니다.");
     } else {
         return;

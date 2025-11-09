@@ -14,15 +14,9 @@ export default class Player {
     if (this.gun === null) {
       this.gun = new Revolver();
     }
-
-    // ======================== online ========================
-    // 네트워크에서 플레이어 정보를 받아 생성할 때 : 이미 gun정보가 있음
-    else {
-      const gunData = config.gun;
-      this.hydrateGun(gunData);
-
-      const bulletsData = config.bullets;
-      this.hydrateBullets(bulletsData);
+    else { // 네트워크에서 플레이어 정보를 받아 생성할 때 : 이미 gun정보가 있음
+      this.hydrateGun(config.gun);
+      this.hydrateBullets(config.bullets);
     }
 
     // respawn을 위한 config정보 저장
@@ -59,6 +53,24 @@ export default class Player {
     // (고급: 기존 총알과 ID를 비교하여 업데이트/삭제/생성할 수도 있습니다)
     this.bullets = bulletsData.map(data => new Bullet(data));
   }
+
+  resetFromData(playerData) {
+    if (!playerData) return;
+
+    // 1. 필요한 중첩 객체를 분리합니다.
+    const { 
+        gun: GunData, 
+        bullets: BulletData, 
+        ...restOfData // x, y, vx, vy, health, isAlive 등 모든 평면 속성
+    } = playerData;
+
+    // 2. 평면 속성들을 Object.assign으로 빠르게 덮어씁니다.
+    Object.assign(this, restOfData);
+
+    // 3. 중첩된 클래스 인스턴스는 hydration 메소드로 상태만 업데이트합니다.
+    this.hydrateGun(GunData);
+    this.hydrateBullets(BulletData);
+}
 
   // ... (move, update, draw 등) ...
 
@@ -352,10 +364,10 @@ export default class Player {
       mode = 'offline'
     } = options;
 
+    handlePlatformCollision(this, platforms, timestamp);
     this.move(keys, deltaTime, canvasWidth);
     if (mode == 'offline') this.draw(ctx, timestamp)
     this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode);
-    handlePlatformCollision(this, platforms, timestamp);
 
     this.switchGun(keys);
 
