@@ -59,8 +59,8 @@ const BasePlayerConfig = {
 
 export const playerConfigs = [
     {
-        id: 0,
         ...BasePlayerConfig,
+        id: 0,
 
         // 고유 설정
         facing: 1,
@@ -79,8 +79,8 @@ export const playerConfigs = [
     },
 
     {
-        id: 1,
         ...BasePlayerConfig,
+        id: 1,
 
         // 고유 설정
         y: 500,
