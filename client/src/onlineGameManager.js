@@ -33,6 +33,8 @@ let pendingInputs = [];
 
 const INTER_AMOUNT = 0.2;
 const OTHER_PLAYER_INTER_AMOUNT = 0.75;
+const TICK_RATE = 60; // (서버 틱 속도)
+const FIXED_DELTA_TIME = 1 / TICK_RATE;
 
 export function initializeGameManager(domElements) {
     // DOM 엘리먼트 할당
@@ -123,10 +125,13 @@ function resetGame() {
     Object.values(serverState.players).forEach(playerData => {
         if (playerData.id === localPlayerId) {
             localPlayer = new Player(playerData);
+            localPlayer.mode = 'render';
             tempPlayer = new Player(playerData);
+            tempPlayer.mode = 'render';
         }
         else {
             otherPlayers[playerData.id] = new Player(playerData);
+            otherPlayers[playerData.id].mode = 'render';
         }
     });
 
@@ -140,6 +145,7 @@ function resetGame() {
 function addNewPlayer(playerData) {
     if (otherPlayers[playerData.id]) return;
     otherPlayers[playerData.id] = new Player(playerData);
+    otherPlayers[playerData.id].mode = 'render';
 }
 
 // ------------------------------------------------------------------------------------------
@@ -164,8 +170,7 @@ function gameLoop(timestamp) {
     if (socket && socket.connected) {
         const input = {
             seq: timestamp,
-            keys: { ...keys },          // 현재 키 상태 복사
-            deltaTime: deltaTime        // 예측 시뮬레이션을 위한 deltaTime
+            keys: { ...keys }
         };
         pendingInputs.push(input);
         socket.emit('playerInput', input);
@@ -289,13 +294,12 @@ function localReplay(localPlayerData) {
     tempPlayer.resetFromData(localPlayerData);
 
     // 서버가 아직 처리하지 않은 입력을 임시 Player에 재시뮬레이션합니다.
+
     pendingInputs.forEach(input => {
         // 이동로직만 재시뮬레이션 합니다.
-        console.log("시뮬레이션 중", input);
         handlePlatformCollision(tempPlayer, platforms, input.timestamp);
-        tempPlayer.move(input.keys, input.deltaTime, gameCanvas.width);
+        tempPlayer.move(input.keys, FIXED_DELTA_TIME, gameCanvas.width);
     });
-
 }
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
@@ -315,6 +319,7 @@ function reconcilePlayer(player, serverPlayerData, amount) {
     player.vy = lerp(player.vy, vy, amount);
 
     player.resetFromData(restOfData);
+    player.mode = 'render';
 }
 
 // -------------------------------------------------------------

@@ -120,11 +120,8 @@ io.on('connection', (socket) => {
 
     // 1. 클라이언트로부터 입력 수신
     socket.on('playerInput', (data) => {
-        const keys = data.keys;
-        const seq = data.seq;
-        // 클라이언트의 최신 키 입력 상태를 저장
-        gameState.keys[socket.id] = keys;
-        gameState.seqs[socket.id] = seq;
+        gameState.keys[socket.id] = data.keys;
+        gameState.seqs[socket.id] = data.seq;
     });
 
     // 2. 연결 종료

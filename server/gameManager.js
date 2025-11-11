@@ -11,6 +11,7 @@ export function createPlayer(socketId, playerId) {
     const playerConfig = playerConfigs[playerId];
     const newPlayer = new Player({
         ...playerConfig,
+        mode: 'online',
         socketId: socketId,
         jumpKeyBuffer: false,
     })
@@ -52,7 +53,6 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
             otherPlayer: otherPlayer,
             timestamp: timestamp,
             platforms: platforms,
-            mode: 'online'
         };
         player.update(updateOptions);
     };

@@ -25,6 +25,7 @@ const BasePlayerConfig = {
     facing: 1,
     color: 'red', // 색상은 Player1의 기본값으로 일단 설정
     lastHit: null,
+    mode: 'offline',
 
     // 총기 관련
     gun: null,

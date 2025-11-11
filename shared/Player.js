@@ -315,6 +315,7 @@ export default class Player {
   }
 
   stepLava(timestamp) {
+    if(this.mode === 'render') return;
     this.getDamage(0, this.lastHit, 'lava', timestamp);
 
     if (this.lastHit) {
@@ -360,14 +361,13 @@ export default class Player {
       otherPlayer,
       timestamp,
       ctx,
-      platforms,
-      mode = 'offline'
+      platforms
     } = options;
 
     handlePlatformCollision(this, platforms, timestamp);
     this.move(keys, deltaTime, canvasWidth);
-    if (mode == 'offline') this.draw(ctx, timestamp)
-    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode);
+    if (this.mode == 'offline') this.draw(ctx, timestamp)
+    this.updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms);
 
     this.switchGun(keys);
 
@@ -384,7 +384,7 @@ export default class Player {
     this.handleGun(keys, timestamp);
   }
 
-  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms, mode) {
+  updateBullets(otherPlayer, deltaTime, canvasWidth, timestamp, ctx, platforms) {
     this.bullets = this.bullets.filter(bullet => {
       if (!bullet.update(deltaTime, platforms)) {
         return false;
@@ -405,7 +405,7 @@ export default class Player {
       return (bullet.x + bullet.width > 0 && bullet.x < canvasWidth);
     });
     // 탄환 그리기
-    if (mode == 'offline') this.bullets.forEach(bullet => bullet.draw(ctx));
+    if (this.mode == 'offline') this.bullets.forEach(bullet => bullet.draw(ctx));
   }
 
   // 무적 판정일 때 플레이어 그리기
