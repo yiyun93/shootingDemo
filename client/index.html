@@ -36,7 +36,7 @@
         }
         
         /* Button Base Style */
-        #mode-selection button {
+        #mode-selection button, #rendering-mode-selection button {
             padding: 0.75rem 1.5rem; /* px-6 py-3 */
             font-size: 1rem;
             font-weight: 600; /* font-semibold */
@@ -46,23 +46,42 @@
         }
         
         /* Offline Button Specific */
-        #offline-btn {
+        .b1 {
             background-color: #4f46e5; /* bg-indigo-600 */
             color: white;
         }
-        #offline-btn:hover {
+        .b1:hover {
             background-color: #4338ca; /* hover:bg-indigo-700 */
             transform: scale(1.15); /* hover:scale-105 */
         }
 
         /* Online Button Specific */
-        #online-btn {
+        .b2 {
             background-color: #10b981; /* bg-green-600 */
             color: white;
         }
-        #online-btn:hover {
+        .b2:hover {
             background-color: #059669; /* hover:bg-green-700 */
             transform: scale(1.15); /* hover:scale-105 */
+        }
+
+        /* Rendering Mode Selection Styles */
+        #rendering-mode-selection {
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            padding: 2rem; 
+            background-color: #1f2937; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            gap: 1.5rem;
+            position: absolute;
+            /* display: none; 초기에는 숨겨짐, JS에서 제어 */
+        }
+        #rendering-mode-selection h1 {
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #facc15; 
         }
 
         #game-container { 
@@ -106,11 +125,22 @@
     <div id="mode-selection">
         <h1>게임 모드 선택</h1>
         <div>
-            <button id="offline-btn">
+            <button id="offline-btn" class="b1">
                 오프라인 플레이
             </button>
-            <button id="online-btn">
+            <button id="online-btn" class="b2">
                 온라인 멀티플레이
+            </button>
+        </div>
+    </div>
+    <div id="rendering-mode-selection" style="display: none;">
+        <h1>Use Client-Side Prediction?</h1>
+        <div>
+            <button id="predict-btn" class="b1">
+                사용
+            </button>
+            <button id="server-only-btn" class="b2">
+                사용 안함
             </button>
         </div>
     </div>

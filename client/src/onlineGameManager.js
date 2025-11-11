@@ -4,6 +4,7 @@ import { maps } from '@shared/maps.js';
 import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
 import { resolvePlayerOverlap, handlePlatformCollision } from '../../shared/physics.js';
+import { predictRender } from './modeManager.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -18,6 +19,8 @@ let roundElement;
 const scoreElements = {};
 
 let socket = null;
+let rtt = 0;
+
 // 서버로부터 수신받는 게임 상태
 let serverState = {};
 
@@ -59,7 +62,7 @@ export function initializeGameManager(domElements) {
         const endTime = performance.now();
 
         // 왕복 시간(RTT) 계산 및 소수점 제거
-        const rtt = Math.round(endTime - sentTime);
+        rtt = Math.round(endTime - sentTime);
 
         // console.log(`[Manual Ping Success] 현재 RTT: ${rtt} ms`);
     });
@@ -177,6 +180,12 @@ function gameLoop(timestamp) {
         gameCtx.fillRect(p.x, p.y, p.width, p.height);
     });
 
+    // 우측상단 ping 표시
+    gameCtx.font = '15px Arial';
+    gameCtx.fillStyle = 'white';
+    gameCtx.textAlign = 'center';
+    gameCtx.fillText(`ping: ${rtt}`, gameCanvas.width - 30, 20);
+
     // 게임오버 텍스트 표시
     if (serverState.gameover) {
         gameCtx.font = '50px Arial';
@@ -206,14 +215,19 @@ function gameLoop(timestamp) {
     // 1-A. 서버 데이터로 보정 (Reconcile)
     const localPlayerData = serverState.players[localPlayerId];
     if (localPlayerData) {
-        localReplay(localPlayerData);
-        reconcilePlayer(localPlayer, tempPlayer, INTER_AMOUNT);
+        if(predictRender){
+            localReplay(localPlayerData);
+            reconcilePlayer(localPlayer, tempPlayer, INTER_AMOUNT);
+        }
+        else{
+            reconcilePlayer(localPlayer, localPlayerData, OTHER_PLAYER_INTER_AMOUNT);
+        }
     }
 
     // 1-B. 예측 후 그리기
 
     // 움직임만 예측
-    if (localPlayer.isAlive) {
+    if (predictRender && localPlayer.isAlive) {
         localPlayer.move(keys, deltaTime, gameCanvas.width);
         handlePlatformCollision(localPlayer, platforms, timestamp);
 
@@ -257,9 +271,9 @@ function lerp(start, end, amt) {
 }
 
 
-function localReplay(localPlayerData){
+function localReplay(localPlayerData) {
     let replayStartIndex = -1;
-    
+
     // 큐에서 승인된 입력을 제거하고 재시뮬레이션 시작점을 찾습니다.
     for (let i = 0; i < pendingInputs.length; i++) {
         if (pendingInputs[i].seq === serverState.seqs[socket.id]) {

@@ -1,6 +1,6 @@
 import { setupInput } from './inputManager.js';
 import { initializeCanvasManager } from './canvasManager.js';
-import { mode, setMode } from './modeManager.js';
+import { mode, setMode, setPredictRender } from './modeManager.js';
 
 // DOM 엘리먼트 정의
 const canvasWrapper = document.getElementById('canvas-wrapper');
@@ -15,6 +15,11 @@ const gameContainer = document.getElementById('game-container');
 const offlineBtn = document.getElementById('offline-btn');
 const onlineBtn = document.getElementById('online-btn');
 
+// 렌더링 모드 버튼 엘리먼트
+const renderingModeSelection = document.getElementById('rendering-mode-selection');
+const predictBtn = document.getElementById('predict-btn');
+const serverOnlyBtn = document.getElementById('server-only-btn');
+
 // 캔버스 초기화
 initializeCanvasManager(canvasWrapper);
 
@@ -28,6 +33,7 @@ async function launchGame(mode) {
     setMode(mode);
     // 1. UI 전환: 모드 선택 화면 숨기고 게임 화면 표시
     modeSelection.style.display = 'none';
+    renderingModeSelection.style.display = 'none';
     gameContainer.style.display = 'flex';
 
     // 2. 모듈 동적 로드
@@ -62,7 +68,24 @@ offlineBtn.addEventListener('click', () => {
 });
 
 onlineBtn.addEventListener('click', () => {
-    launchGame('online');
+    // 1. UI 전환: 게임 모드 선택 화면 숨기고 렌더링 모드 선택 화면 표시
+    modeSelection.style.display = 'none';
+    renderingModeSelection.style.display = 'flex';
+    gameContainer.style.display = 'none';
+
+    // 2. 예측 렌더링 사용 버튼 이벤트 리스너
+    predictBtn.onclick = () => {
+        setPredictRender(true);
+        console.log("렌더링 모드: 클라이언트 예측 사용");
+        launchGame('online');
+    };
+
+    // 3. 서버 상태만 렌더링 버튼 이벤트 리스너
+    serverOnlyBtn.onclick = () => {
+        setPredictRender(false);
+        console.log("렌더링 모드: 서버 상태만 렌더링");
+        launchGame('online');
+    };
 });
 
 // 탭 가시성 변경 이벤트 리스너 (GameManager의 stop/startLoop 함수를 사용)
