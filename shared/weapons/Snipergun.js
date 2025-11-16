@@ -12,7 +12,7 @@ const SNIPERGUN_DEFAULT_CONFIG = {
 
   bulletConfig: {
     color: '#fbff00ff',
-    width: 60,
+    width: 55,
     height: 2,
     damage: DAMAGE,
     power: { x: 700, y: -250 },
