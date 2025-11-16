@@ -65,13 +65,10 @@ export function initializeGameManager(domElements) {
 
         // 왕복 시간(RTT) 계산 및 소수점 제거
         rtt = Math.round(endTime - sentTime);
-
-        // console.log(`[Manual Ping Success] 현재 RTT: ${rtt} ms`);
     });
 
     // 2. 초기 상태
     socket.on('initPlayer', (data) => {
-        console.log(data);
         serverState = data.state;
         localPlayerId = data.playerId;
         resetGame();
@@ -152,8 +149,9 @@ function addNewPlayer(playerData) {
 // **rAF 기반의 클라이언트 게임 루프** (렌더링 및 예측 담당)
 // ------------------------------------------------------------------------------------------
 let animationId = null;
-
+let tick = 0;
 function gameLoop(timestamp) {
+    tick++;
     if (!localPlayer || !serverState.players) {
         requestAnimationFrame(gameLoop);
         return;
@@ -163,16 +161,13 @@ function gameLoop(timestamp) {
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
 
-    // serverstate.players 는 객체 타입이기 때문에 배열로 전환후, Player 인스턴스로 만들어서 players 에 할당
-    // const players = Object.values(serverState.players).map(playerData => new Player(playerData));
-
     // 1. 키 입력 전송 (requestAnimationFrame 속도로 보냅니다.)
     if (socket && socket.connected) {
         const input = {
-            seq: timestamp,
+            seq: tick,
             keys: { ...keys }
         };
-        pendingInputs.push(input);
+        if(predictRender) pendingInputs.push(input);
         socket.emit('playerInput', input);
     }
 
@@ -217,21 +212,8 @@ function gameLoop(timestamp) {
     // ------------------------------------------------------------------------------------
 
     // 1. 로컬 플레이어 (예측 및 보정)
-    // 1-A. 서버 데이터로 보정 (Reconcile)
-    const localPlayerData = serverState.players[localPlayerId];
-    if (localPlayerData) {
-        if(predictRender){
-            localReplay(localPlayerData);
-            reconcilePlayer(localPlayer, tempPlayer, INTER_AMOUNT);
-        }
-        else{
-            reconcilePlayer(localPlayer, localPlayerData, OTHER_PLAYER_INTER_AMOUNT);
-        }
-    }
 
-    // 1-B. 예측 후 그리기
-
-    // 움직임만 예측
+    // 1-A. 움직임 예측
     if (predictRender && localPlayer.isAlive) {
         localPlayer.move(keys, deltaTime, gameCanvas.width);
         handlePlatformCollision(localPlayer, platforms, timestamp);
@@ -240,6 +222,18 @@ function gameLoop(timestamp) {
             Object.values(otherPlayers).forEach(player => {
                 resolvePlayerOverlap(localPlayer, player);
             })
+        }
+    }
+
+    // 1-B. 서버 데이터로 보정 (Reconcile)
+    const localPlayerData = serverState.players[localPlayerId];
+    if (localPlayerData) {
+        if(predictRender){
+            tempPlayerReplay(localPlayerData);
+            reconcilePlayer(localPlayer, tempPlayer, INTER_AMOUNT);
+        }
+        else{
+            reconcilePlayer(localPlayer, localPlayerData, OTHER_PLAYER_INTER_AMOUNT);
         }
     }
 
@@ -266,6 +260,7 @@ function gameLoop(timestamp) {
     });
 
     animationId = requestAnimationFrame(gameLoop);
+    keys['KeyW'] = false;
 }
 
 
@@ -276,7 +271,7 @@ function lerp(start, end, amt) {
 }
 
 
-function localReplay(localPlayerData) {
+function tempPlayerReplay(localPlayerData) {
     let replayStartIndex = -1;
 
     // 큐에서 승인된 입력을 제거하고 재시뮬레이션 시작점을 찾습니다.
@@ -293,13 +288,13 @@ function localReplay(localPlayerData) {
     // 시작점에 맞춰 tempPlayer 초기화
     tempPlayer.resetFromData(localPlayerData);
 
-    // 서버가 아직 처리하지 않은 입력을 임시 Player에 재시뮬레이션합니다.
-
+    // 서버가 아직 처리하지 않은 입력을 tempPlayer에 재시뮬레이션
     pendingInputs.forEach(input => {
-        // 이동로직만 재시뮬레이션 합니다.
+        // 이동로직 재시뮬레이션
         handlePlatformCollision(tempPlayer, platforms, input.timestamp);
         tempPlayer.move(input.keys, FIXED_DELTA_TIME, gameCanvas.width);
     });
+
 }
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.
@@ -313,12 +308,12 @@ function reconcilePlayer(player, serverPlayerData, amount) {
     } = serverPlayerData;
 
     // 2. [보간] x, y 위치는 부드럽게 보정
+    player.resetFromData(restOfData);
     player.x = lerp(player.x, x, amount);
     player.y = lerp(player.y, y, amount);
     player.vx = lerp(player.vx, vx, amount);
     player.vy = lerp(player.vy, vy, amount);
-
-    player.resetFromData(restOfData);
+    
     player.mode = 'render';
 }
 

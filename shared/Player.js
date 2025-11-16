@@ -23,6 +23,23 @@ export default class Player {
     this.defaultState = JSON.parse(JSON.stringify(config));
   }
 
+  resetFromData(playerData) {
+    if (!playerData) return;
+
+    // 1. 필요한 중첩 객체를 분리합니다.
+    const {
+      gun: GunData,
+      bullets: BulletData,
+      ...restOfData // x, y, vx, vy, health, isAlive 등 모든 평면 속성
+    } = playerData;
+
+    // 2. 평면 속성들을 Object.assign으로 빠르게 덮어씁니다.
+    Object.assign(this, restOfData);
+
+    // 3. 중첩된 클래스 인스턴스는 hydration 메소드로 상태만 업데이트합니다.
+    this.hydrateGun(GunData);
+    this.hydrateBullets(BulletData);
+  }
 
   hydrateGun(gunData) {
     if (!gunData) return;
@@ -54,25 +71,10 @@ export default class Player {
     this.bullets = bulletsData.map(data => new Bullet(data));
   }
 
-  resetFromData(playerData) {
-    if (!playerData) return;
 
-    // 1. 필요한 중첩 객체를 분리합니다.
-    const { 
-        gun: GunData, 
-        bullets: BulletData, 
-        ...restOfData // x, y, vx, vy, health, isAlive 등 모든 평면 속성
-    } = playerData;
-
-    // 2. 평면 속성들을 Object.assign으로 빠르게 덮어씁니다.
-    Object.assign(this, restOfData);
-
-    // 3. 중첩된 클래스 인스턴스는 hydration 메소드로 상태만 업데이트합니다.
-    this.hydrateGun(GunData);
-    this.hydrateBullets(BulletData);
-}
-
+  // =====================================================================
   // ... (move, update, draw 등) ...
+  // =====================================================================
 
   move(keys, deltaTime, canvasWidth) {
     // 죽은 상태에선 움직임 제한
@@ -151,14 +153,11 @@ export default class Player {
         // 점프 성공시 코요테/버퍼 타임 소진
         this.coyoteTimeCounter = 0;
         this.jumpBufferCounter = 0;
-
-        // 다음 프레임에서 점프가 다시 실행되는 것을 막기 위해 키 입력을 소비합니다.
-        keys[this.controls.jump] = false;
       }
 
       // B. 공중 점프 (이중 점프) 허용. 최대 점프속도 보다 낮을 때만
       // 지상/코요테 점프가 실패했을 때만 공중 점프를 시도합니다.
-      else if (this.jumpsLeft > 0 && this.vy > this.jumpStrength * 0.5) {
+      else if (this.jumpsLeft > 0 && this.vy > this.jumpStrength * 0.25) {
         // console.log(`${this.color} player jumped on the air`);
 
         this.jumpsLeft--;
@@ -166,9 +165,6 @@ export default class Player {
         this.onJump = true;
 
         this.jumpBufferCounter = 0; // 점프 버퍼 초기화
-
-        // 다음 프레임에서 점프가 다시 실행되는 것을 막기 위해 키 입력을 소비합니다.
-        keys[this.controls.jump] = false;
       }
     }
 
@@ -315,7 +311,7 @@ export default class Player {
   }
 
   stepLava(timestamp) {
-    if(this.mode === 'render') return;
+    if (this.mode === 'render') return;
     this.getDamage(0, this.lastHit, 'lava', timestamp);
 
     if (this.lastHit) {
