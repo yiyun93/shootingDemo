@@ -8,14 +8,19 @@ const GUN_CLASS_MAP = { Pistol, Revolver, Smg, Snipergun };
 
 export default class Player {
   constructor(config) {
-    Object.assign(this, config); // property 복사
+    // gun과 bullets는 별도로 처리하기 위해 config에서 분리
+    const { gun, bullets, ...restConfig } = config;
 
-    if (this.gun === null) {
+    Object.assign(this, restConfig); 
+
+    // gun 초기화 로직
+    if (!gun) {
       this.gun = new Pistol();
+      this.bullets = [];
     }
-    else { // 네트워크에서 플레이어 정보를 받아 생성할 때 : 이미 gun정보가 있음
-      this.hydrateGun(config.gun);
-      this.hydrateBullets(config.bullets);
+    else { 
+      this.hydrateGun(gun);
+      this.hydrateBullets(bullets);
     }
 
     // respawn을 위한 config정보 저장
@@ -50,8 +55,8 @@ export default class Player {
       return;
     }
 
-    // 1. 총이 다르거나, 총이 없었으면 새로 생성
-    if (!this.gun || this.gun.type !== gunData.type) {
+    // 1. 총이 다르거나, shoot 메소드가 없는 '껍데기 객체'거나, 총이 없었으면 새로 생성
+    if (!this.gun || this.gun.type !== gunData.type || typeof this.gun.shoot !== 'function') {
       this.gun = new GunClass(gunData);
     }
 
