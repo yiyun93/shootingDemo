@@ -157,6 +157,10 @@ function gameLoop(timestamp) {
         return;
     }
 
+    if(round != serverState.round){
+        resetGame();
+    }
+
     // 델타 타임 계산 (밀리초를 초 단위로 변환)
     const deltaTime = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
@@ -167,7 +171,7 @@ function gameLoop(timestamp) {
             seq: tick,
             keys: { ...keys }
         };
-        if(predictRender) pendingInputs.push(input);
+        if (predictRender) pendingInputs.push(input);
         socket.emit('playerInput', input);
     }
 
@@ -187,24 +191,32 @@ function gameLoop(timestamp) {
     gameCtx.fillText(`ping: ${rtt}`, gameCanvas.width - 30, 20);
 
     // 게임오버 텍스트 표시
-    if (serverState.gameover) {
+    if (serverState.gameover && serverState.round != 0) {
         gameCtx.font = '50px Arial';
         gameCtx.fillStyle = 'white';
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Round Over!', gameCanvas.width / 2, gameCanvas.height / 2);
 
-        // 다시시작 문구 깜빡이기
-        const blinkPeriod = 1500
-        const timeInCycle = timestamp % blinkPeriod;
-        // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
-        const angle = (timeInCycle / blinkPeriod) * 2 * Math.PI;
-        let alpha = (Math.sin(angle) + 1.0) / 2.0;
-
-        gameCtx.globalAlpha = alpha; // 계산된 투명도 적용
+        gameCtx.globalAlpha = getBlinkingAlpha(timestamp); // 계산된 투명도 적용
         gameCtx.font = '20px Arial';
         gameCtx.fillStyle = 'white';
-        gameCtx.fillText(`The next round will begin in next ${serverState.restartCountDown}`, gameCanvas.width / 2, gameCanvas.height * 0.8);
+        gameCtx.fillText(`The next round will begin in next ${serverState.remainingSeconds}`, gameCanvas.width / 2, gameCanvas.height * 0.8);
         gameCtx.globalAlpha = 1.0;
+    }
+
+    // 게임 준비 로직
+    if (serverState.round == 0) {
+        gameCtx.globalAlpha = getBlinkingAlpha(timestamp); // 계산된 투명도 적용
+        gameCtx.font = '20px Arial';
+        gameCtx.fillStyle = 'white';
+        if (!serverState.gameReady) {
+            gameCtx.fillText("Waiting for the player...", gameCanvas.width / 2, gameCanvas.height * 0.8);
+            gameCtx.globalAlpha = 1.0;
+        }
+        else {
+            gameCtx.fillText(`The game will start in ${serverState.remainingSeconds} seconds.`, gameCanvas.width / 2, gameCanvas.height * 0.8);
+            gameCtx.globalAlpha = 1.0;
+        }
     }
 
 
@@ -228,11 +240,11 @@ function gameLoop(timestamp) {
     // 1-B. 서버 데이터로 보정 (Reconcile)
     const localPlayerData = serverState.players[localPlayerId];
     if (localPlayerData) {
-        if(predictRender){
+        if (predictRender) {
             tempPlayerReplay(localPlayerData);
             reconcilePlayer(localPlayer, tempPlayer, INTER_AMOUNT);
         }
-        else{
+        else {
             reconcilePlayer(localPlayer, localPlayerData, OTHER_PLAYER_INTER_AMOUNT);
         }
     }
@@ -313,7 +325,7 @@ function reconcilePlayer(player, serverPlayerData, amount) {
     player.y = lerp(player.y, y, amount);
     player.vx = lerp(player.vx, vx, amount);
     player.vy = lerp(player.vy, vy, amount);
-    
+
     player.mode = 'render';
 }
 
@@ -334,4 +346,14 @@ export function stopLoop() {
         animationId = null;
         console.log("[Online] rAF Game Loop Stopped.");
     }
+}
+
+function getBlinkingAlpha(timestamp) {
+    const blinkPeriod = 1500
+    const timeInCycle = timestamp % blinkPeriod;
+    // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
+    const angle = (timeInCycle / blinkPeriod) * 2 * Math.PI;
+    const alpha = (Math.sin(angle) + 1.0) / 2.0;
+
+    return alpha;
 }

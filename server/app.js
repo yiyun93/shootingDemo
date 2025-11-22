@@ -52,11 +52,10 @@ let gameOn = false;
 // 서버가 관리하는 모든 플레이어의 상태 (객체로 관리)
 let serverPlayers = {};
 // 게임의 종합 상태
-let gameState = {
+const DEFAULT_STATE_SETTING = {
     remainingSeconds: 0,
     roundStartTime: 0,
     gameover: false,
-    restartCountDown: 0,
     players: serverPlayers,
     mapId: 0, // default
     round: 0,
@@ -65,8 +64,10 @@ let gameState = {
         1: 0
     },
     keys: {},
-    seqs: {}
-};
+    seqs: {},
+    gameReady: false
+}
+let gameState = DEFAULT_STATE_SETTING;
 let getPlayerId = {};
 
 const MAX_PLAYERS = 2;
@@ -82,7 +83,7 @@ io.on('connection', (socket) => {
         break;
     }
     if (isNaN(playerId)) {
-        // Full server logic
+        // Full player logic
         socket.disconnect();
         return;
     }
@@ -101,7 +102,8 @@ io.on('connection', (socket) => {
 
     // 플레이어가 모두 입장한 경우 게임 시작 카운트 실행
     if (Object.keys(serverPlayers).length === MAX_PLAYERS) {
-        console.log('** 모든 플레이어 입장 잠시후 게임이 시작됩니다.')
+        console.log('** 모든 플레이어 입장, 잠시후 게임이 시작됩니다.');
+        gameState.gameReady = true;
     }
 
     gameState.keys[socket.id] = {};
@@ -128,6 +130,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`[종료] 플레이어 연결 해제: ${socket.id}`);
 
+        gameState = DEFAULT_STATE_SETTING;
+
         // 기존 플레이어 정보 제거
         delete serverPlayers[playerId];
 
@@ -146,6 +150,9 @@ let timestamp;
 
 function init() {
     setInterval(() => {
+        if (Object.values(serverPlayers).length != MAX_PLAYERS) {
+            gameState.gameReady = false;
+        }
         timestamp = performance.now();
         // 1. 모든 플레이어 입력 처리 및 게임 로직 업데이트
         // 이 함수가 gameManager.js의 핵심 로직을 대체하게 됩니다.

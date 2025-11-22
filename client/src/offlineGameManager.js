@@ -4,7 +4,7 @@ import { keys } from './inputManager.js';
 import { resolvePlayerOverlap } from '@shared/physics.js';
 import Player from '@shared/Player.js';
 import { recreateCanvas } from './canvasManager.js';
-import { GAME_DURATION } from '@shared/constants.js';
+import { ROUND_DURATION } from '@shared/constants.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map;
@@ -61,7 +61,7 @@ function gameLoop(timestamp) {
     });
 
     const elapsedTime = timestamp - roundStartTime;
-    const remainingTimeMs = GAME_DURATION - elapsedTime;
+    const remainingTimeMs = ROUND_DURATION - elapsedTime;
     // 남은 시간(초) 계산 및 정수형으로 변환
     const remainingSeconds = Math.max(0, Math.ceil(remainingTimeMs / 1000));
     // HTML 엘리먼트 업데이트
