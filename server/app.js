@@ -47,6 +47,7 @@ app.get('/', (req, res) => {
 // =======================================================
 // 5. 게임 데이터 및 Socket.io 이벤트 처리
 // =======================================================
+let intervalId;
 
 let gameOn = false;
 // 서버가 관리하는 모든 플레이어의 상태 (객체로 관리)
@@ -67,7 +68,8 @@ const DEFAULT_STATE_SETTING = {
     seqs: {},
     gameReady: false
 }
-let gameState = DEFAULT_STATE_SETTING;
+let gameState = structuredClone(DEFAULT_STATE_SETTING);
+gameState.players = serverPlayers;
 let getPlayerId = {};
 
 const MAX_PLAYERS = 2;
@@ -89,7 +91,7 @@ io.on('connection', (socket) => {
     }
 
     // 새 플레이어 생성 및 초기 상태 설정
-    const newPlayer = createPlayer(socket.id, playerId);
+    const newPlayer = createPlayer(socket.id, playerId, gameState.mapId);
     getPlayerId[socket.id] = playerId;
     serverPlayers[playerId] = newPlayer;
 
@@ -100,11 +102,6 @@ io.on('connection', (socket) => {
     // 다른 모든 플레이어에게 새 플레이어 접속을 알림
     socket.broadcast.emit('newPlayer', serverPlayers[playerId]);
 
-    // 플레이어가 모두 입장한 경우 게임 시작 카운트 실행
-    if (Object.keys(serverPlayers).length === MAX_PLAYERS) {
-        console.log('** 모든 플레이어 입장, 잠시후 게임이 시작됩니다.');
-        gameState.gameReady = true;
-    }
 
     gameState.keys[socket.id] = {};
     gameState.seqs[socket.id] = 0;
@@ -130,10 +127,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`[종료] 플레이어 연결 해제: ${socket.id}`);
 
-        gameState = DEFAULT_STATE_SETTING;
 
         // 기존 플레이어 정보 제거
         delete serverPlayers[playerId];
+        gameState.gameReady = false;
 
         // 다른 모든 클라이언트에게 플레이어 제거 사실을 알림
         io.emit('playerDisconnected', socket.id);
@@ -149,13 +146,19 @@ const FIXED_DELTA_TIME = 1 / TICK_RATE; // 고정된 델타 타임 (약 0.01666�
 let timestamp;
 
 function init() {
-    setInterval(() => {
-        if (Object.values(serverPlayers).length != MAX_PLAYERS) {
-            gameState.gameReady = false;
+    gameState.roundStartTime = performance.now();
+
+    intervalId = setInterval(() => {
+        const playerNumber = Object.values(serverPlayers).length;
+        if (playerNumber == 0) {
+            resetServer();
+        } else if (!gameState.gameReady && playerNumber === MAX_PLAYERS) {
+            gameState.gameReady = true;
         }
+
         timestamp = performance.now();
+
         // 1. 모든 플레이어 입력 처리 및 게임 로직 업데이트
-        // 이 함수가 gameManager.js의 핵심 로직을 대체하게 됩니다.
         const newGameState = updateGame({
             gameState: gameState,
             deltaTime: FIXED_DELTA_TIME,
@@ -163,9 +166,15 @@ function init() {
         });
 
         gameState = newGameState;
+        const stateToSend = JSON.parse(JSON.stringify(gameState));
+
+        Object.values(stateToSend.players).forEach(player => {
+            player.killLog = [];
+            player.lastHit = null;
+        })
 
         // 2. 업데이트된 게임 상태를 모든 클라이언트에게 전송
-        io.emit('gameState', gameState);
+        io.emit('gameState', stateToSend);
 
     }, 1000 / TICK_RATE);
 }
@@ -177,3 +186,12 @@ httpServer.listen(PORT, () => {
     console.log(`[서버 시작] Game server listening on port ${PORT}`);
     console.log(`[서버 틱] Fixed Tick Rate: ${TICK_RATE} Hz`);
 });
+
+function resetServer() {
+    console.log('reset server');
+    gameState = structuredClone(DEFAULT_STATE_SETTING);
+    gameState.players = serverPlayers;
+
+    clearInterval(intervalId);
+    gameOn = false;
+}

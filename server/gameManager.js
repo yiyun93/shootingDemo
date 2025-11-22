@@ -5,10 +5,8 @@ import { resolvePlayerOverlap } from '../shared/physics.js';
 import { ROUND_DURATION } from '../shared/constants.js';
 const readyCount = 10000;
 
-let map = maps[0]; // 대기 맵
-let platforms = map.platforms;
 
-export function createPlayer(socketId, playerId) {
+export function createPlayer(socketId, playerId, mapId) {
     const playerConfig = playerConfigs[playerId];
     const newPlayer = new Player({
         ...playerConfig,
@@ -16,7 +14,7 @@ export function createPlayer(socketId, playerId) {
         socketId: socketId,
         jumpKeyBuffer: false,
     })
-    newPlayer.setSpawnPoint(map.spawnPoints[playerId].x, map.spawnPoints[playerId].y);
+    newPlayer.setSpawnPoint(maps[mapId].spawnPoints[playerId].x, maps[mapId].spawnPoints[playerId].y);
     return newPlayer;
 }
 
@@ -30,6 +28,7 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
         if(gameState.gameReady){
             gameState.gameover = true;
             gameState.roundStartTime = timestamp;
+            console.log('플레이어 입장완료. 곧 게임이 시작됩니다.');
         }
         else{
             gameState.remainingSeconds = 0;
@@ -69,10 +68,10 @@ export function updateGame({ gameState, deltaTime, timestamp }) {
         const updateOptions = {
             keys: gameState.keys[player.socketId],
             deltaTime: deltaTime,
-            canvasWidth: map.width,
+            canvasWidth: maps[gameState.mapId].width,
             otherPlayer: otherPlayer,
             timestamp: timestamp,
-            platforms: platforms,
+            platforms: maps[gameState.mapId].platforms,
         };
         player.update(updateOptions);
     };
@@ -112,16 +111,16 @@ function refineGameState(gameState) {
 
 function resetRound(gameState, timestamp) {
     gameState.round++;
-    const mapId = Math.floor(Math.random() * (maps.length-1)) + 1;
+    //const mapId = Math.floor(Math.random() * (maps.length-1)) + 1;
+    const mapId = 5;
+    
     gameState.mapId = mapId;
-    map = maps[mapId];
-    platforms = map.platforms;
-    console.log(`${gameState.round} 라운드 : ${map.name} `);
+    console.log(`${gameState.round} 라운드 : ${maps[mapId].name} `);
 
     // 캐릭터 재생성
     const playerIds = Object.keys(gameState.players);
     playerIds.forEach(playerId => {
-        const newPlayer = createPlayer(gameState.players[playerId].socketId, playerId);
+        const newPlayer = createPlayer(gameState.players[playerId].socketId, playerId, mapId);
         gameState.players[playerId] = newPlayer;
     });
 

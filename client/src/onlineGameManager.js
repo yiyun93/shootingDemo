@@ -118,6 +118,8 @@ function resetGame() {
     gameCtx = ctx;
     gameCanvas.style.backgroundColor = map.background;
 
+    otherPlayers = {};
+
     // Player 클래스 생성
     Object.values(serverState.players).forEach(playerData => {
         if (playerData.id === localPlayerId) {
@@ -152,12 +154,13 @@ let animationId = null;
 let tick = 0;
 function gameLoop(timestamp) {
     tick++;
+
     if (!localPlayer || !serverState.players) {
         requestAnimationFrame(gameLoop);
         return;
     }
 
-    if(round != serverState.round){
+    if (round != serverState.round) {
         resetGame();
     }
 
@@ -227,11 +230,12 @@ function gameLoop(timestamp) {
 
     // 1-A. 움직임 예측
     if (predictRender && localPlayer.isAlive) {
+        handlePlatformCollision(localPlayer, platforms);
         localPlayer.move(keys, deltaTime, gameCanvas.width);
-        handlePlatformCollision(localPlayer, platforms, timestamp);
 
         if (otherPlayers) {
             Object.values(otherPlayers).forEach(player => {
+                localPlayer.stomp(player, timestamp);
                 resolvePlayerOverlap(localPlayer, player);
             })
         }
@@ -259,16 +263,14 @@ function gameLoop(timestamp) {
         const playerData = serverState.players[player.id];
         if (playerData) {
             reconcilePlayer(player, playerData, OTHER_PLAYER_INTER_AMOUNT);
+            player.draw(gameCtx);
+            player.bullets.forEach(bullet => {
+                bullet.draw(gameCtx);
+            });
         }
         else {
-            player = null;
-            return;
+            delete otherPlayers[player.id];
         }
-
-        player.draw(gameCtx);
-        player.bullets.forEach(bullet => {
-            bullet.draw(gameCtx);
-        });
     });
 
     animationId = requestAnimationFrame(gameLoop);
@@ -303,10 +305,15 @@ function tempPlayerReplay(localPlayerData) {
     // 서버가 아직 처리하지 않은 입력을 tempPlayer에 재시뮬레이션
     pendingInputs.forEach(input => {
         // 이동로직 재시뮬레이션
-        handlePlatformCollision(tempPlayer, platforms, input.timestamp);
+        handlePlatformCollision(tempPlayer, platforms);
         tempPlayer.move(input.keys, FIXED_DELTA_TIME, gameCanvas.width);
     });
 
+    if (otherPlayers) {
+        Object.values(otherPlayers).forEach(player => {
+            tempPlayer.stomp(player);
+        })
+    }
 }
 
 // 이 함수는 rAF의 한 프레임마다 로컬 Player를 서버 위치로 보정하는 역할만 합니다.

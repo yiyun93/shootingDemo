@@ -214,7 +214,7 @@ export default class Player {
         this.x < otherPlayer.x + otherPlayer.width * 0.7 && this.x + this.width > otherPlayer.x + otherPlayer.width * 0.3) {
         this.vy = this.jumpStrength; // 튕겨오르기
         this.jumpsLeft = this.extraJump; // 공중점프 초기화
-        this.killPlayer(otherPlayer, timestamp, 'stomped on');
+        if(this.mode != 'render') this.killPlayer(otherPlayer, timestamp, 'stomped on');
       }
     }
   }
