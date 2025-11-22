@@ -16,7 +16,13 @@ const SNIPERGUN_DEFAULT_CONFIG = {
     height: 2,
     damage: DAMAGE,
     power: { x: 700, y: -250 },
-    speed: 1200
+    speed: 1400
+  },
+
+  ammoRenderConfig: {
+    width: 12,
+    height: 5,
+    enum: 11
   }
 }
 

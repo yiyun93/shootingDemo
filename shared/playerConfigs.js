@@ -72,8 +72,8 @@ export const playerConfigs = [
             jump: 'KeyW',
             down: 'KeyS',
             shoot: 'Space',
-            revolver: 'Digit1',
-            pistol: 'Digit2',
+            pistol: 'Digit1',
+            revolver: 'Digit2',
             smg: 'Digit3',
             snipergun: 'Digit4'
         },
@@ -93,8 +93,8 @@ export const playerConfigs = [
             jump: 'ArrowUp',
             down: 'ArrowDown',
             shoot: 'Numpad0',
-            revolver: 'Numpad1',
-            pistol: 'Numpad2',
+            pistol: 'Numpad1',
+            revolver: 'Numpad2',
             smg: 'Numpad3',
             snipergun: 'Numpad4'
         }

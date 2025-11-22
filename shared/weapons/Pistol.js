@@ -5,7 +5,7 @@ const DAMAGE = 10;
 const PISTOL_DEFAULT_CONFIG = {
   type: "Pistol",
   damage: DAMAGE,
-  shootRate: 250, // ms
+  shootRate: 300, // ms
   maxAmmo: 7,
   reloadDelay: 0, // ms
   reloadRate: 2000, // ms
@@ -17,6 +17,12 @@ const PISTOL_DEFAULT_CONFIG = {
     damage: DAMAGE,
     power: { x: 350, y: -180 },
     speed: 1000
+  },
+
+  ammoRenderConfig: {
+    width: 8,
+    height: 4,
+    enum: 7
   }
 };
 

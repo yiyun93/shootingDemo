@@ -14,12 +14,19 @@ this.currentAmmo = this.maxAmmo;
 this.lastShotTime = 0;
 this.reloading = false;
 this.reloadTime = 0;
+
+
+// ammoRenderConfig = {
+    width: 8,
+    height: 4,
+    enum: 7,
+}
 */
 
 export default class Gun {
     constructor(config) {
         Object.assign(this, config);
-        
+
         // 기본값 할당
         if (this.currentAmmo === undefined) {
             this.currentAmmo = this.maxAmmo;
@@ -65,7 +72,8 @@ export default class Gun {
             return;
         }
 
-        // 탄 소모시 재장전 시작
+
+        // 탄 소모시 또는 재장전 대기시간 동안 미발사 시 재장전 시작
         if (!this.reloading && this.currentAmmo === 0) {
             this.reloading = true;
             this.reloadTime = timestamp;
@@ -84,5 +92,16 @@ export default class Gun {
     // 매 프레임 호출되어야 하는 로직 (재장전 등)
     update(timestamp) {
         this.reload(timestamp);
+    }
+
+    drawAmmo(ctx, x, y, color) {
+        //장전 수 표시
+        ctx.fillStyle = color
+        let indexX = x
+        let indexY = y - 10;
+        for (let i = 0; i < this.currentAmmo; i++) {
+            ctx.fillRect(indexX - this.ammoRenderConfig.width/2, indexY, this.ammoRenderConfig.width, this.ammoRenderConfig.height);
+            indexY -= this.ammoRenderConfig.enum;
+        }
     }
 }

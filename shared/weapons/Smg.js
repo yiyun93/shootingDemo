@@ -1,11 +1,11 @@
 import Gun from './Gun.js';
 
-const DAMAGE = 4;
+const DAMAGE = 7;
 
 const SMG_DEFAULT_CONFIG = {
   type: "Smg",
   damage: DAMAGE,
-  shootRate: 80, // ms
+  shootRate: 70, // ms
   maxAmmo: 20,
   reloadDelay: 0, // ms
   reloadRate: 2800, // ms
@@ -17,6 +17,12 @@ const SMG_DEFAULT_CONFIG = {
     damage: DAMAGE,
     power: { x: 200, y: -80 },
     speed: 900
+  },
+
+  ammoRenderConfig: {
+    width: 7,
+    height: 3,
+    enum: 5
   }
 }
 

@@ -12,7 +12,7 @@ export default class Player {
     Object.assign(this, config); // property 복사
 
     if (this.gun === null) {
-      this.gun = new Revolver();
+      this.gun = new Pistol();
     }
     else { // 네트워크에서 플레이어 정보를 받아 생성할 때 : 이미 gun정보가 있음
       this.hydrateGun(config.gun);
@@ -47,7 +47,7 @@ export default class Player {
     const GunClass = GUN_CLASS_MAP[gunData.type];
     // 알 수 없는 총기 타입
     if (!GunClass) {
-      this.gun = new Revolver();
+      this.gun = new Pistol();
       return;
     }
 
@@ -292,7 +292,7 @@ export default class Player {
 
     const cleanState = JSON.parse(JSON.stringify(this.defaultState));
     Object.assign(this, cleanState);
-    this.gun = new Revolver();
+    this.gun = new Pistol();
     this.setInvincible(timestamp);
   }
 
@@ -460,22 +460,8 @@ export default class Player {
       ctx.arc(this.x + this.width / 2 + this.facing * (this.width / 4), this.y + this.height / 3, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      //장전 수 표시
-      ctx.fillStyle = this.color //
-      let ammoX = this.x + this.width / 2;
-      let ammoY = this.y - this.height / 5
-      for (let i = 0; i < this.gun.currentAmmo; i++) {
-        ctx.beginPath();
-        ctx.arc(ammoX, ammoY - 6 * i, 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      //장탄수 표시
+      this.gun.drawAmmo(ctx, this.x+this.width/2, this.y, this.color)
     }
-
-    /* 장탄수 숫자 표기식 
-    ctx.font = '14px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.fillText(this.currentAmmo, this.x + this.width / 2, this.y - this.height / 5);
-    */
   }
 }
