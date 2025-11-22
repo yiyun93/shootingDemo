@@ -5,6 +5,7 @@ import { recreateCanvas } from './canvasManager.js';
 import Player from '@shared/Player.js';
 import { resolvePlayerOverlap, handlePlatformCollision } from '../../shared/physics.js';
 import { predictRender } from './modeManager.js';
+import getBlinkingAlpha from './getBlinkingAlpha.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map = null;
@@ -353,14 +354,4 @@ export function stopLoop() {
         animationId = null;
         console.log("[Online] rAF Game Loop Stopped.");
     }
-}
-
-function getBlinkingAlpha(timestamp) {
-    const blinkPeriod = 1500
-    const timeInCycle = timestamp % blinkPeriod;
-    // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
-    const angle = (timeInCycle / blinkPeriod) * 2 * Math.PI;
-    const alpha = (Math.sin(angle) + 1.0) / 2.0;
-
-    return alpha;
 }

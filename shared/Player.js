@@ -4,7 +4,6 @@ import {
 } from "./constants.js";
 import { applyKnockback, isColliding, handlePlatformCollision } from "./physics.js";
 import { Bullet, Pistol, Revolver, Smg, Snipergun } from "./weapons/index.js";
-
 const GUN_CLASS_MAP = { Pistol, Revolver, Smg, Snipergun };
 
 export default class Player {
@@ -329,6 +328,8 @@ export default class Player {
   }
 
   switchGun(keys) {
+    return;
+
     if (keys[this.controls.revolver]) {
       this.gun = new Revolver();
       keys[this.controls.revolver] = false;
@@ -345,6 +346,11 @@ export default class Player {
       this.gun = new Snipergun();
       keys[this.controls.snipergun] = false;
     }
+  }
+
+  getItem(content){
+    const GunClass = GUN_CLASS_MAP[content];
+    this.gun = new GunClass();
   }
 
   // =============================================================================================

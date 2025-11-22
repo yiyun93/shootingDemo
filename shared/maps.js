@@ -126,10 +126,7 @@ const maps = [
             { x: 1100, y: 400, width: 150, height: 20, color: '#f39c12', type: 'hover' },
             
             // 중앙 상부 고립 플랫폼 (hover)
-            { x: 600, y: 280, width: 200, height: 20, color: '#9b59b6', type: 'hover' },
-            
-            // 중앙 막다른 벽
-            { x: 400, y: 150, width: 600, height: 20, color: '#2c3e50', type: 'hover' }
+            { x: 600, y: 280, width: 200, height: 20, color: '#9b59b6', type: 'hover' }
         ],
         // 스폰 지점: 좌우측 2단 플랫폼 위에 배치 
         spawnPoints: [

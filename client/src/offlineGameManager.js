@@ -5,6 +5,8 @@ import { resolvePlayerOverlap } from '@shared/physics.js';
 import Player from '@shared/Player.js';
 import { recreateCanvas } from './canvasManager.js';
 import { ROUND_DURATION } from '@shared/constants.js';
+import ItemManager from '../../shared/ItemManager.js';
+import getBlinkingAlpha from './getBlinkingAlpha.js';
 
 // 1. 상태 변수 (게임 매니저가 관리)
 let map;
@@ -80,12 +82,7 @@ function gameLoop(timestamp) {
         gameCtx.textAlign = 'center';
         gameCtx.fillText('Round Over!', gameCanvas.width / 2, gameCanvas.height / 2);
 
-        // 다시시작 문구 깜빡이기
-        const blinkPeriod = 1500
-        const timeInCycle = timestamp % blinkPeriod;
-        // 시간에 따른 각도 계산 (0부터 2*PI까지 변하도록)
-        const angle = (timeInCycle / blinkPeriod) * 2 * Math.PI;
-        let alpha = (Math.sin(angle) + 1.0) / 2.0;
+        let alpha = getBlinkingAlpha(timestamp);
 
         gameCtx.globalAlpha = alpha; // 계산된 투명도 적용
         gameCtx.font = '20px Arial';
@@ -95,6 +92,9 @@ function gameLoop(timestamp) {
     }
 
     const activePlayers = players.filter(p => p.isAlive);
+
+    // 아이템 업데이트
+    ItemManager.update(deltaTime, timestamp, players, gameCanvas.width, gameCanvas.height, platforms, gameCtx);
 
     
     // 플레이어 업데이트
