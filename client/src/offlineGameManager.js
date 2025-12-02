@@ -170,6 +170,8 @@ function resetGame() {
         players[i].setSpawnPoint( map.spawnPoints[i].x,  map.spawnPoints[i].y );
     }
 
+    ItemManager.items = [];
+
     // 게임 상태 초기화
     isGameOver = false;
     roundStartTime = performance.now(); // 현재 시간을 roundStartTime으로 설정
